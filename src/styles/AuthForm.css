@@ -1,0 +1,154 @@
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    background-color: #f5f5f5;
+  }
+  
+  .auth-box {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .auth-title {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #333;
+    font-size: 1.8rem;
+  }
+  
+  .phone-form {
+    margin-bottom: 1.5rem;
+  }
+  
+  .input-group {
+    margin-bottom: 1rem;
+  }
+  
+  .phone-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 26px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+  }
+  
+  .phone-input:focus {
+    border-color: #AECACD;
+    outline: none;
+  }
+  
+  .submit-btn,
+  .social-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 26px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background-color 0.3s;
+  }
+  
+  .submit-btn {
+    background-color: #32ba77;
+    color: white;
+    margin-bottom: 1rem;
+  }
+  
+  .submit-btn:hover {
+    background-color: #9dbdc0;
+  }
+  
+  .divider {
+    text-align: center;
+    margin: 2rem 0;
+    position: relative;
+  }
+  
+  .text-span{
+    margin: 2rem;
+    font-size: 1rem;
+
+  }
+
+  .divider::before,
+  .divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 45%;
+    height: 1px;
+    background-color: #ddd;
+  }
+  
+  .divider::before { left: 0; }
+  .divider::after { right: 0; }
+  
+  .divider span {
+    background-color: white;
+    padding: 0 10px;
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  .social-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .social-btn {
+    border: 1px solid #ddd;
+    background-color: white;
+    color: #333;
+  }
+  
+  .social-btn:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .social-btn.google { color: #DB4437; }
+  .social-btn.facebook { color: #4267B2; }
+  .social-btn.email { color: #333; }
+  
+  .auth-switch {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: #666;
+  }
+  
+  .auth-switch a {
+    color: #AECACD;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .auth-switch a:hover {
+    text-decoration: underline;
+  }
+  
+  @media (max-width: 480px) {
+    .auth-box {
+      padding: 1.5rem;
+    }
+  
+    .auth-title {
+      font-size: 1.5rem;
+    }
+  
+    .submit-btn,
+    .social-btn {
+      padding: 10px;
+    }
+  }
