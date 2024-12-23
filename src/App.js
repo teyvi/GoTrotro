@@ -1,7 +1,10 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import './App.css';
 import HomeLayout from './layouts/HomeLayout';
-import Home from './pages/Home';
+import Home from './pages/HomePage';
+import Feedback from './pages/Feedback';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 function App() {
   return (
@@ -10,7 +13,10 @@ function App() {
       <Routes>
       <Route path="/" element={<HomeLayout/>}>
       <Route index element={<Home/>}/>
+      <Route path="/sendfeedback" element={<Feedback/>}/>
       </Route>
+      <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       <Route path="*" element={<Navigate to="/" replace />}/>
       </Routes>
       </BrowserRouter>

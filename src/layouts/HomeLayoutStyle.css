@@ -1,0 +1,60 @@
+
+
+.layout-container {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+.main-content {
+  flex: 1;
+  width: calc(100% - 60px); /* Full width minus menu icon space */
+  min-height: 100vh;
+  margin-left: 60px;
+  transition: margin-left 350ms, width 350ms;
+  padding: 0; /* Remove padding to fill screen */
+}
+
+/* When sidebar is open */
+.main-content.shift {
+  width: calc(100% - 250px);
+  margin-left: 250px;
+}
+
+@media screen and (max-width: 768px) {
+  .main-content {
+    width: calc(100% - 50px);
+    margin-left: 50px;
+  }
+  
+  .main-content.shift {
+    width: calc(100% - 200px);
+    margin-left: 200px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .main-content {
+    width: calc(100% - 40px);
+    margin-left: 40px;
+  }
+  
+  .main-content.shift {
+    width: calc(100% - 180px);
+    margin-left: 180px;
+  }
+}
+
+/* Add this to ensure proper sizing of child elements */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+/* If you have a root div in your app, add this */
+#root {
+  min-height: 100vh;
+}
