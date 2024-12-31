@@ -14,7 +14,7 @@ function SideBar({ onSidebarChange }) {
   const showSideBar = () => {
     const newState = !sideBar;
     setSideBar(newState);
-    onSidebarChange(newState); // Notify parent of change
+    onSidebarChange(newState);
   };
 
   return (
