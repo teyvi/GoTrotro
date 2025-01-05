@@ -11,10 +11,9 @@ function App() {
     <div>
       <BrowserRouter>
       <Routes>
-      <Route path="/" element={<HomeLayout/>}>
+      <Route path="/" element={<HomeLayout/>}/>
       <Route index element={<Home/>}/>
       <Route path="/sendfeedback" element={<Feedback/>}/>
-      </Route>
       <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       <Route path="*" element={<Navigate to="/" replace />}/>

@@ -1,13 +1,13 @@
 import MapComponent from "../components/MapComponent";
 import SearchComponent from "../components/SearchComponent";
-import '../styles/Home.css'
+import HomeLayout from "../layouts/HomeLayout";
 
 function Home() {
   return (
-    <div className="">
-      <SearchComponent />
-      <MapComponent/>
-    </div>
+    <HomeLayout pageTitle= {<SearchComponent/>}>
+    
+    <MapComponent />
+  </HomeLayout>
   );
 }
 

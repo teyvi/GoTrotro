@@ -7,12 +7,4 @@
   font-family: 'Lato', sans-serif;
 }
 
-.home,
-.location,
-.routing {
-  display: flex;
-  height: 90vh;
-  align-items: center;
-  justify-content: center;
-  font-size: 3rem;
-}
+
