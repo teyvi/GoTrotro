@@ -11,7 +11,7 @@ class HomeLayout extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isSidebarOpen: window.innerWidth >= 1024,
+      isSidebarOpen: false,
       isMobile: window.innerWidth < 768,
     };
   }
@@ -54,8 +54,12 @@ class HomeLayout extends React.Component {
     return (
       <div className="min-h-screen bg-gray-100">
         {/* Navbar */}
-        <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-20">
-          <div className="px-4 h-16 flex items-center">
+        <nav
+          className={`fixed top-0 left-0 right-0 bg-white shadow-md z-20 transition-all duration-300 ${
+            isSidebarOpen ? "md:pl-64 lg:pl-64" : "pl-0"
+          }`}
+        >
+          <div className="px-4 h-28 flex items-center">
             <button
               onClick={this.toggleSidebar}
               className="p-2 hover:bg-gray-100 rounded-lg shrink-0"
@@ -74,11 +78,8 @@ class HomeLayout extends React.Component {
 
         {/* Sidebar */}
         <aside
-          className={`fixed top-0 h-full bg-white shadow-lg z-30 
-          ${
-            `w-64 transform transition-transform duration-300 ease-in-out ${
-              isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-            }`
+          className={`fixed top-0 h-full bg-white shadow-lg z-30 w-64 transform transition-transform duration-300 ease-in-out ${
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
           <div className="p-4 h-full flex flex-col">
@@ -91,8 +92,6 @@ class HomeLayout extends React.Component {
                 <X className="h-6 w-6" />
               </button>
             </div>
-
-            {/* Navigation Items */}
             <nav className="space-y-2 flex-grow">
               {this.navigationItems.map((item, index) => {
                 const Icon = item.icon;
@@ -109,8 +108,6 @@ class HomeLayout extends React.Component {
                 );
               })}
             </nav>
-
-            {/* Bottom section of sidebar */}
             <div className="mt-auto p-4 border-t border-gray-200">
               <span className="text-sm text-gray-500">© 2024 Gotrotro</span>
             </div>
@@ -119,13 +116,13 @@ class HomeLayout extends React.Component {
 
         {/* Main Content */}
         <main
-          className={`pt-16 min-h-screen transition-all duration-300
-          ${isSidebarOpen ? "md:pl-64 lg:pl-64" : "pl-0"}`}
+          className={`pt-16 min-h-screen transition-all duration-300 ${
+            isSidebarOpen ? "md:pl-64 lg:pl-64" : "pl-0"
+          }`}
         >
-          <div className="p-4 md:p-6 lg:p-8">{children}</div>
+          <div  >{children}</div>
         </main>
 
-        {/* Overlay - Shows on mobile only */}
         {isMobile && isSidebarOpen && (
           <div
             className="fixed inset-0 bg-black bg-opacity-50 z-20"
