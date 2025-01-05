@@ -59,7 +59,7 @@ class HomeLayout extends React.Component {
             isSidebarOpen ? "md:pl-64 lg:pl-64" : "pl-0"
           }`}
         >
-          <div className="px-4 h-28 flex items-center">
+          <div className="p-4  flex items-center">
             <button
               onClick={this.toggleSidebar}
               className="p-2 hover:bg-gray-100 rounded-lg shrink-0"
@@ -84,7 +84,7 @@ class HomeLayout extends React.Component {
         >
           <div className="p-4 h-full flex flex-col">
             <div className="flex justify-between items-center mb-6">
-              <span className="text-xl font-bold">Menu</span>
+              <span className="text-3xl font-bold">Gotrotro</span>
               <button
                 onClick={this.toggleSidebar}
                 className="p-2 hover:bg-gray-100 rounded-lg"
