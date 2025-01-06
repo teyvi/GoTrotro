@@ -5,7 +5,7 @@ import { RiRouteFill, RiFeedbackLine } from "react-icons/ri";
 import { IoShareSocial } from "react-icons/io5";
 import { MdOutlineAccountCircle } from "react-icons/md";
 import { FaBarsStaggered } from "react-icons/fa6";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 class HomeLayout extends React.Component {
   constructor(props) {
@@ -67,7 +67,7 @@ class HomeLayout extends React.Component {
               <Menu className="h-6 w-6" />
             </button>
             <div className="flex-grow px-4">
-              {typeof pageTitle === 'string' ? (
+              {typeof pageTitle === "string" ? (
                 <h1 className="text-xl font-semibold truncate">{pageTitle}</h1>
               ) : (
                 <div className="w-full">{pageTitle}</div>
@@ -116,11 +116,11 @@ class HomeLayout extends React.Component {
 
         {/* Main Content */}
         <main
-          className={`pt-16 min-h-screen transition-all duration-300 ${
+          className={`min-h-screen transition-all duration-300 ${
             isSidebarOpen ? "md:pl-64 lg:pl-64" : "pl-0"
           }`}
         >
-          <div  >{children}</div>
+          <div>{children}</div>
         </main>
 
         {isMobile && isSidebarOpen && (
