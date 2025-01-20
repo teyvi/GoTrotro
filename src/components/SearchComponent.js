@@ -2,6 +2,8 @@
 import React from "react";
 import { FaLocationDot, FaRegCircle } from "react-icons/fa6";
 
+
+
 function SearchComponent() {
   return (
     <div className="w-full px-1 sm:px-2">
