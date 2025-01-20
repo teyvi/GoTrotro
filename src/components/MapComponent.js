@@ -1,4 +1,3 @@
-// import React from "react";
 import "maplibre-gl/dist/maplibre-gl.css";
 import React, { useRef, useEffect } from 'react';
 import * as maptilersdk from '@maptiler/sdk';
