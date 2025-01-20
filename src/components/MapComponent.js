@@ -10,7 +10,7 @@ function MapComponent() {
       initialViewState={{
         longitude: position[1],
         latitude: position[0],
-        zoom: 2,
+        zoom: 10,
       }}
       mapStyle="https://demotiles.maplibre.org/style.json"
       style={{ height: "calc(100vh - 20px)", width: "100%" }}
