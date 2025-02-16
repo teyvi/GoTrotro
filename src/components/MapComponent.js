@@ -18,7 +18,7 @@ function MapComponent() {
       style={{
         position: "absolute",
         width: "100%",
-        height: "calc(100vh - 20px)",
+        height: "calc(100vh)",
       }}
       mapStyle={`https://api.maptiler.com/maps/streets/style.json?key=${process.env.REACT_APP_MAPTILER_TOKEN}`}
     >
