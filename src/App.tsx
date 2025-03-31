@@ -5,6 +5,7 @@ import Home from './pages/HomePage';
 import Feedback from './pages/Feedback';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import React from 'react';
 
 function App() {
   return (

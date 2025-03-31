@@ -42,6 +42,7 @@ function Home() {
       <MapComponent 
         origin={origin} 
         destination={destination} 
+        routingEngine='OSRM'
       />
     </HomeLayout>
   );
