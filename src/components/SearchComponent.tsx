@@ -1,34 +1,25 @@
-import React, { useState } from "react";
+import React from "react";
 import { IoIosSwap } from "react-icons/io";
-import GeocoderInput from "./GeocoderInput";
-import { SearchComponentProps } from "../types/mapTypes";
+import { useLocation } from "../hooks/useLocation";
+import LocationSearchInput from "./LocationSearch";
 
-function SearchComponent({ onOriginSelect, onDestinationSelect, onSwapLocations }: SearchComponentProps) {
-  const [origin, setOrigin] = useState<string>("");
-  const [destination, setDestination] = useState<string>("");
+function SearchComponent() {
+  const { origin, destination, setOrigin, setDestination, swapLocations } = useLocation();
 
-  const handleSwap = () => {
-    if (origin && destination) {
-      setOrigin(destination);
-      setDestination(origin);
-
-      onSwapLocations && onSwapLocations();
-    }
-  };
 
   return (
     <div className="w-full px-1 sm:px-2">
       <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-        <GeocoderInput
+        <LocationSearchInput
           placeholder="Select Origin"
           icon="origin"
-          value={origin}
-          onChange={setOrigin}
-          onSelect={onOriginSelect}
+          value={origin?.place_name || ""}
+          onLocationSelect={setOrigin}
         />
+        
         <div className="flex items-center justify-center">
           <button
-            onClick={handleSwap}
+            onClick={swapLocations}
             className="p-1 hover:bg-gray-100 rounded-full"
             title="Swap Locations"
             disabled={!origin || !destination}
@@ -38,12 +29,12 @@ function SearchComponent({ onOriginSelect, onDestinationSelect, onSwapLocations 
             />
           </button>
         </div>
-        <GeocoderInput
+        
+        <LocationSearchInput
           placeholder="Select Destination"
           icon="destination"
-          value={destination}
-          onChange={setDestination}
-          onSelect={onDestinationSelect}
+          value={destination?.place_name || ""}
+          onLocationSelect={setDestination}
         />
       </div>
     </div>
