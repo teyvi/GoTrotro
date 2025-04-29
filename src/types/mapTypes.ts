@@ -39,3 +39,22 @@ export interface Location {
     onDestinationSelect?: (result: any) => void;
     onSwapLocations?: () => void;
   };
+
+
+  // Define our location result type for better type safety
+export type LocationResult = {
+  place_name: string;
+  coordinates: [number, number]; // [longitude, latitude]
+  properties: Record<string, any>;
+  center: [number, number]
+  latitude: number,
+  longitude: number,
+};
+
+export type LocationContextType = {
+  origin: LocationResult | null;
+  destination: LocationResult | null;
+  setOrigin: (location: LocationResult | null) => void;
+  setDestination: (location: LocationResult | null) => void;
+  swapLocations: () => void;
+};

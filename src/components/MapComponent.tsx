@@ -1,26 +1,29 @@
-import React, {useRef,
+import React, {
+  useRef,
   useEffect,
   useState,
   useMemo,
-  useCallback} from "react";
-import {GeolocateControl,
+  useCallback,
+} from "react";
+import {
+  GeolocateControl,
   Map,
   NavigationControl,
   Marker,
   Source,
   Layer,
   MapRef,
-  LayerProps} from "react-map-gl/maplibre";
+  LayerProps,
+} from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "../styles/map.css";
 import RoutingEngineFactory from "../routingEngines/RoutingEngineFactories";
-import {Location, RouteData, MapComponentProps} from "../types/mapTypes";
+import { Location, RouteData } from "../types/mapTypes";
+import { useLocation } from "../hooks/useLocation";
+import debounce from "lodash.debounce";
 
-function MapComponent({
-  origin,
-  destination,
-  routingEngine = "OSRM",
-}: MapComponentProps) {
+function MapComponent({ routingEngine = "OSRM" }: { routingEngine: string }) {
+  const { origin, destination } = useLocation();
   const mapRef = useRef<MapRef>(null);
   const [originMarker, setOriginMarker] = useState<Location | null>(null);
   const [destinationMarker, setDestinationMarker] = useState<Location | null>(
@@ -35,45 +38,46 @@ function MapComponent({
     return RoutingEngineFactory.createEngine(routingEngine);
   }, [routingEngine]);
 
-  const calculateRoute = useCallback(async () => {
-    if (!originMarker || !destinationMarker) return;
+  const calculateRoute = useCallback(
+    debounce(async () => {
+      if (!originMarker || !destinationMarker) return;
 
-    setLoading(true);
+      setLoading(true);
 
-    try {
-      const route = await routingEngineInstance.getRoute(
-        originMarker,
-        destinationMarker
-      );
+      try {
+        const route = await routingEngineInstance.getRoute(
+          originMarker,
+          destinationMarker
+        );
 
-      if (!route || !route.geometry || !route.distance || !route.duration) {
-        throw new Error("Invalid route data");
+        if (!route || !route.geometry || !route.distance || !route.duration) {
+          throw new Error("Invalid route data");
+        }
+
+        setRouteData({
+          type: "Feature",
+          properties: {},
+          geometry: route.geometry,
+        });
+
+        const distanceInKm = (route.distance / 1000).toFixed(1);
+        setRouteDistance(distanceInKm);
+
+        const durationInMinutes = Math.round(route.duration / 60);
+        const hours = Math.floor(durationInMinutes / 60);
+        const minutes = durationInMinutes % 60;
+
+        setRouteDuration(
+          hours > 0 ? `${hours} hr ${minutes} min` : `${minutes} min`
+        );
+      } catch (error) {
+        console.error("Error calculating route:", error);
+      } finally {
+        setLoading(false);
       }
-
-      setRouteData({
-        type: "Feature",
-        properties: {},
-        geometry: route.geometry,
-      });
-
-      const distanceInKm = (route.distance / 1000).toFixed(1);
-      setRouteDistance(distanceInKm);
-
-      const durationInMinutes = Math.round(route.duration / 60);
-      const hours = Math.floor(durationInMinutes / 60);
-      const minutes = durationInMinutes % 60;
-
-      if (hours > 0) {
-        setRouteDuration(`${hours} hr ${minutes} min`);
-      } else {
-        setRouteDuration(`${minutes} min`);
-      }
-    } catch (error) {
-      console.error("Error calculating route:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [originMarker, destinationMarker, routingEngineInstance]);
+    }, 300),
+    [originMarker, destinationMarker, routingEngineInstance]
+  );
 
   const flyToLocation = useCallback((longitude: number, latitude: number) => {
     if (mapRef.current) {
@@ -85,82 +89,85 @@ function MapComponent({
     }
   }, []);
 
-  const fitMapToMarkers = useCallback(() => {
-    if (mapRef.current && originMarker && destinationMarker) {
-      const bounds: [[number, number], [number, number]] = [
-        [originMarker.longitude, originMarker.latitude],
-        [destinationMarker.longitude, destinationMarker.latitude],
-      ];
-      mapRef.current.fitBounds(bounds, {
-        padding: 100,
-        duration: 2000,
-      });
-    }
-  }, [originMarker, destinationMarker]);
+  const fitMapToMarkers = useCallback(
+    debounce(() => {
+      if (mapRef.current && originMarker && destinationMarker) {
+        const bounds: [[number, number], [number, number]] = [
+          [originMarker.longitude, originMarker.latitude],
+          [destinationMarker.longitude, destinationMarker.latitude],
+        ];
+        mapRef.current.fitBounds(bounds, {
+          padding: 100,
+          duration: 2000,
+        });
+      }
+    }, 300),
+    [originMarker, destinationMarker]
+  );
 
   useEffect(() => {
-    if (origin && origin.center) {
-      setOriginMarker({
-        longitude: origin.center[0],
-        latitude: origin.center[1],
-        name: origin.place_name,
-        center: origin.center,
-        place_name: origin.place_name,
+    if (origin?.coordinates) {
+      setOriginMarker((prev) => {
+        if (
+          prev?.longitude === origin.coordinates[0] &&
+          prev?.latitude === origin.coordinates[1]
+        ) {
+          return prev; 
+        }
+        return {
+          longitude: origin.coordinates[0],
+          latitude: origin.coordinates[1],
+          name: origin.place_name,
+          center: origin.coordinates,
+          place_name: origin.place_name,
+        };
       });
-
-      if (destinationMarker) {
-        fitMapToMarkers();
-        calculateRoute();
-      } else {
-        flyToLocation(origin.center[0], origin.center[1]);
-      }
     }
-  }, [
-    origin,
-    destinationMarker,
-    fitMapToMarkers,
-    calculateRoute,
-    flyToLocation,
-  ]);
 
-  useEffect(() => {
-    if (destination && destination.center) {
-      setDestinationMarker({
-        longitude: destination.center[0],
-        latitude: destination.center[1],
-        name: destination.place_name,
-        center: destination.center,
-        place_name: destination.place_name,
+    if (destination?.coordinates) {
+      setDestinationMarker((prev) => {
+        if (
+          prev?.longitude === destination.coordinates[0] &&
+          prev?.latitude === destination.coordinates[1]
+        ) {
+          return prev; 
+        }
+        return {
+          longitude: destination.coordinates[0],
+          latitude: destination.coordinates[1],
+          name: destination.place_name,
+          center: destination.coordinates,
+          place_name: destination.place_name,
+        };
       });
-
-      if (originMarker) {
-        fitMapToMarkers();
-        calculateRoute();
-      } else {
-        flyToLocation(destination.center[0], destination.center[1]);
-      }
     }
-  }, [
-    destination,
-    originMarker,
-    fitMapToMarkers,
-    calculateRoute,
-    flyToLocation,
-  ]);
 
-  const routeLayerStyle: LayerProps = {
-    id: "route",
-    type: "line",
-    layout: {
-      "line-join": "round",
-      "line-cap": "round",
-    },
-    paint: {
-      "line-color": "#4285F4",
-      "line-width": 4,
-      "line-opacity": 0.8,
-    },
-  };
+    if (origin?.coordinates && destination?.coordinates) {
+      fitMapToMarkers();
+      calculateRoute();
+    } else if (origin?.coordinates) {
+      flyToLocation(origin.coordinates[0], origin.coordinates[1]);
+    } else if (destination?.coordinates) {
+      flyToLocation(destination.coordinates[0], destination.coordinates[1]);
+    }
+  }, [origin, destination, fitMapToMarkers, calculateRoute, flyToLocation]);
+
+  const routeLayerStyle: LayerProps = useMemo(
+    () => ({
+      id: "route",
+      type: "line",
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+      },
+      paint: {
+        "line-color": "#4285F4",
+        "line-width": 4,
+        "line-opacity": 0.8,
+      },
+    }),
+    []
+  );
 
   return (
     <>
