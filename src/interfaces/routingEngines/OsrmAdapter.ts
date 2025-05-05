@@ -1,9 +1,11 @@
-import { IOSRMEngine } from './../../types/mapTypes';
+import { IOSRMEngine, Itineraries } from './../../types/mapTypes';
+
+const itineraries: Itineraries = null
 
 export const createOSRMAdapter = (): IOSRMEngine => {
   return {
     getRoute: async (
-      origin: { longitude: number; latitude: number }, 
+      origin: { longitude: number; latitude: number },
       destination: { longitude: number; latitude: number },
       options?: {
         arriveBy?: boolean;
@@ -17,9 +19,9 @@ export const createOSRMAdapter = (): IOSRMEngine => {
       const response = await fetch(
         `https://router.project-osrm.org/route/v1/driving/${origin.longitude},${origin.latitude};${destination.longitude},${destination.latitude}?overview=full&geometries=geojson`
       );
-      
+
       const data = await response.json();
-      
+
       if (data.routes && data.routes.length > 0) {
         const route = data.routes[0];
         return {
@@ -28,7 +30,7 @@ export const createOSRMAdapter = (): IOSRMEngine => {
           duration: route.duration,
         };
       }
-      
+
       throw new Error("No route found");
     }
   };
