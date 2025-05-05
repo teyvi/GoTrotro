@@ -58,3 +58,116 @@ export type LocationContextType = {
   setDestination: (location: LocationResult | null) => void;
   swapLocations: () => void;
 };
+
+ 
+
+export interface IOSRMEngine {
+  getRoute(origin: { longitude: number; latitude: number }, destination: { longitude: number; latitude: number },
+    options?: {
+      arriveBy?: boolean;
+      wheelChair?: boolean;
+    }
+  ): Promise<{
+    geometry: any,
+    distance: number,
+    duration: number
+  }>
+}
+
+export interface IValhallaEngine {
+  getRoute(origin: { longitude: number; latitude: number }, destination: { longitude: number; latitude: number }, mode:string,
+    options?: {
+      arriveBy?: boolean;
+      wheelChair?: boolean;
+    }
+  ): Promise<{
+    geometry: any,
+    distance: number,
+    duration: number
+  }>
+}
+
+export interface IOTPEngine {
+  getRoute(origin: { longitude: number; latitude: number }, destination: { longitude: number; latitude: number },
+    options?: {
+      arriveBy?: boolean;
+      wheelChair?: boolean;
+    }
+  ): Promise<{
+    origin: {
+      coordinates: [number, number];
+      name: string;
+    };
+    destination: {
+      coordinates: [number, number];
+      name: string;
+    };
+    itineraries: Array<{
+      duration: number;
+      startTime: Date;
+      endTime: Date;
+      walkTime: number;
+      transitTime: number;
+      waitingTime: number;
+      walkDistance: number;
+      transfers: number;
+      legs: Array<{
+        mode: string;
+        route: string;
+        agency: string;
+        from: {
+          name: string;
+          coordinates: [number, number];
+          departureTime: Date | null;
+        };
+        to: {
+          name: string;
+          coordinates: [number, number];
+          arrivalTime: Date | null;
+        };
+        distance: number;
+        duration: number;
+        geometry: string;
+        steps: Array<{
+          instruction: string;
+          distance: number;
+          direction: string;
+        }>;
+      }>;
+    }>;
+    primaryItinerary: 
+    Array<{
+      duration: number;
+      startTime: Date;
+      endTime: Date;
+      walkTime: number;
+      transitTime: number;
+      waitingTime: number;
+      walkDistance: number;
+      transfers: number;
+      legs: Array<{
+        mode: string;
+        route: string;
+        agency: string;
+        from: {
+          name: string;
+          coordinates: [number, number];
+          departureTime: Date | null;
+        };
+        to: {
+          name: string;
+          coordinates: [number, number];
+          arrivalTime: Date | null;
+        };
+        distance: number;
+        duration: number;
+        geometry: string;
+        steps: Array<{
+          instruction: string;
+          distance: number;
+          direction: string;
+        }>;
+      }>;
+    }>;
+  }>;
+}

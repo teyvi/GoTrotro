@@ -17,7 +17,7 @@ import {
 } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "../styles/map.css";
-import RoutingEngineFactory from "../routingEngines/RoutingEngineFactories";
+import {RoutingEngineFactory} from "../interfaces/routingEngines/RoutingEngineFactories";
 import { Location, RouteData } from "../types/mapTypes";
 import { useLocation } from "../hooks/useLocation";
 import debounce from "lodash.debounce";
@@ -35,7 +35,7 @@ function MapComponent({ routingEngine = "OSRM" }: { routingEngine: string }) {
   const [loading, setLoading] = useState(false);
 
   const routingEngineInstance = useMemo(() => {
-    return RoutingEngineFactory.createEngine(routingEngine);
+    return RoutingEngineFactory.engineType(routingEngine);
   }, [routingEngine]);
 
   const calculateRoute = useCallback(
@@ -169,6 +169,7 @@ function MapComponent({ routingEngine = "OSRM" }: { routingEngine: string }) {
     []
   );
 
+  console.log("🚀 ~ MapComponent ~ routeData:", routeData)
   return (
     <>
       <Map

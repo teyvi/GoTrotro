@@ -6,7 +6,7 @@ import Feedback from './pages/Feedback';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import React from 'react';
-
+ 
 function App() {
   return (
     <div>
@@ -25,7 +25,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+\        </Routes>
       </BrowserRouter>
     </div>
   );
