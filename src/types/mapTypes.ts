@@ -2,11 +2,10 @@ export type Point = {
   longitude: number,
   latitude: number
 }
+
 export type Location = {
-  center: Point;
-  place_name: string; // Name of the location
-  point: Point
-  name: string;
+  coordinates: Point
+  name?: string;
 }
 
 export interface RouteData {
@@ -14,20 +13,26 @@ export interface RouteData {
   properties: {};
   geometry: {
     type: "LineString";
-    coordinates: Point[];
+    coordinates: [[number, number]];
   };
 }
 
-export interface RouteInfo {
-  distance: string; // Distance in kilometers
-  duration: string; // Duration in hours/minutes
+export interface RoutingAdapter {
+  getRoute: GetRoute
 }
 
-export interface MapComponentProps {
-  origin: Location;
-  destination: Location;
-  routingEngine?: string;
-}
+export type GetRoute = ((options: RoutingRequest) => Promise<Itinerary[]>)
+
+// export interface RouteInfo {
+//   distance: string; // Distance in kilometers
+//   duration: string; // Duration in hours/minutes
+// }
+
+// export interface MapComponentProps {
+//   origin: Location;
+//   destination: Location;
+//   routingEngine?: string;
+// }
 
 export type GeocoderInputProps = {
   placeholder: string;
@@ -37,11 +42,11 @@ export type GeocoderInputProps = {
   value: string;
 }
 
-export type SearchComponentProps = {
-  onOriginSelect?: (result: any) => void;
-  onDestinationSelect?: (result: any) => void;
-  onSwapLocations?: () => void;
-};
+// export type SearchComponentProps = {
+//   onOriginSelect?: (result: any) => void;
+//   onDestinationSelect?: (result: any) => void;
+//   onSwapLocations?: () => void;
+// };
 
 
 // Define our location result type for better type safety
@@ -62,30 +67,73 @@ export type LocationContextType = {
   swapLocations: () => void;
 };
 
-export enum TransportationModes {
-  BICYCLE = 0,
-  WALK = 1,
-  TRANSIT = 2,
-  CAR = 3
+export enum TransportationMode {
+  BICYCLE,
+  WALK,
+  TRANSIT,
+  CAR
+}
+
+export enum WindRoseDirection {
+  NORTH,
+  NORTHEAST,
+  EAST,
+  SOUTHEAST,
+  SOUTH,
+  SOUTHWEST,
+  WEST,
+  NORTHWEST,
+  UNKNOWN
+}
+
+export enum BodyRelativeDirection {
+  RIGHT,
+  LEFT,
+  FORWARD,
+  BACKWARD,
+  TOP,
+  BOTTOM,
+  START,
+  END,
+  UNKNOWN
+}
+
+export enum StepType {
+  TURN,
+  ROUNDABOUT,
+  UTURN
 }
 
 export type RoutingRequest = {
   origin: Point,
   destination: Point,
-  mode: TransportationModes[],
+  modes: TransportationMode[],
   wheelchair: boolean
 }
 
-export type Itineraries = {
-  duration: number;
-  startTime: Date;
-  endTime: Date;
-  walkTime: number;
-  transitTime: number;
-  waitingTime: number;
-  walkDistance: number;
-  transfers: number;
+export type Leg = {
+  name: string,
+  mode: TransportationMode,
+  steps: Step[]
+}
+
+export type Itinerary = {
+  distance: number,
+  duration: number,
+  startTime: Date,
+  endTime: Date,
+  legs: Leg[],
+  geometry: [[number, number]]
 } | null
+
+export type Step = {
+  name: string,
+  from: Location | null,
+  to: Location | null,
+  windRoseDirection: WindRoseDirection | null
+  bodyRelativeDirection: BodyRelativeDirection
+  stepType: StepType
+}
 
 export type RoutingResponse = {
 

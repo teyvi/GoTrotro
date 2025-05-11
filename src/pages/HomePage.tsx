@@ -9,7 +9,7 @@ function Home() {
   return (
     <LocationProvider>
       <HomeLayout pageTitle={<SearchComponent />}>
-        <MapComponent routingEngine="OSRM" />
+        <MapComponent />
       </HomeLayout>
     </LocationProvider>
   );
