@@ -172,6 +172,7 @@ export class OtpAdapter implements RoutingAdapter {
       endTime: new Date(jsonItinerary.endTime), // unix epoch format
       legs: (jsonItinerary.legs as Array<any>).map((jsonLeg) => this.parseLeg(jsonLeg, geometry)),
       distance: jsonItinerary.walkDistance,
+      // @ts-expect-error
       geometry: geometry
     }
   }
