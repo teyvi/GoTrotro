@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaGoogle, FaFacebook, FaApple } from 'react-icons/fa';
-import { MdEmail } from 'react-icons/md';
-import '../styles/AuthForm.css'
+ import '../styles/AuthForm.css'
 
 function AuthForm({ type }) {
   const [phoneNumber, setPhoneNumber] = useState('');

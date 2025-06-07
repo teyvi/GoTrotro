@@ -57,6 +57,7 @@ export type LocationResult = {
   center: [number, number]
   latitude: number,
   longitude: number,
+   id?: string;
 };
 
 export type LocationContextType = {
