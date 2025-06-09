@@ -1,4 +1,4 @@
-import {
+ import {
   RoutingRequest,
   Itinerary,
   Leg,
@@ -13,7 +13,7 @@ import {
 export class OtpAdapter implements RoutingAdapter {
 
   private otpEndpointURL: URL;
-  private static DEFAULT_MAX_WALK_DISTANCE = 804.672;
+  private static DEFAULT_MAX_WALK_DISTANCE = 0.5;
 
   constructor(otpEndpointURL: URL | string) {
     if (typeof otpEndpointURL === "string") {
@@ -39,7 +39,7 @@ export class OtpAdapter implements RoutingAdapter {
         hour12: true,
       }),
       date: `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}-${now.getFullYear()}`,
-      mode: "TRANSIT,WALK", // TODO: change this once this is configurable either in the app configuration or in the GUI by the user
+      mode: "TRANSIT", // TODO: change this once this is configurable either in the app configuration or in the GUI by the user
       maxWalkDistance: OtpAdapter.DEFAULT_MAX_WALK_DISTANCE.toString(),
       arriveBy: "false",
       wheelchair: String(options.wheelchair),
@@ -53,7 +53,9 @@ export class OtpAdapter implements RoutingAdapter {
     const data = await response.json();
 
     const itineraries: Itinerary[] = [];
-
+    if(data.plan.Itinerary !== undefined){
+      throw new Error ("No itinerary")
+    }
     for (const jsonItinerary of data.plan.itineraries) {
       itineraries.push(this.parseItinerary(jsonItinerary))
     }

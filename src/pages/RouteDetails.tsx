@@ -4,6 +4,8 @@ import Layout from '../layouts/Layout';
 import { ArrowLeft, MapPin, Bell,Ticket } from 'lucide-react';
 import { Button } from '../assets/Button';
 
+
+//this is just a sample code or the ui. not fully integrated
 // Mock data for a single route
 const routeData = {
   id: "route-1",
@@ -68,10 +70,7 @@ const RouteDetails = () => {
   const navigate = useNavigate();
   const [route, setRoute] = useState(routeData);
 
-  // Simulating data fetch based on route ID
   useEffect(() => {
-     // In a real app, you would fetch route details based on the ID
-    // For now, we're using mock data
     setRoute(routeData);
   }, [id]);
 

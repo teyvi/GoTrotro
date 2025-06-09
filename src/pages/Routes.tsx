@@ -4,8 +4,9 @@ import Layout from "../layouts/Layout";
 import { ArrowLeft, MapPin, Clock, DollarSign, ArrowRight } from "lucide-react";
 import { Button } from "../assets/Button";
 import { cn } from "../lib/utils";
-import { LocationResult } from "../types/mapTypes";
+import { LocationResult, TransportationMode } from "../types/mapTypes";
 import { GeocoderService } from "../services/GeocoderService";
+import { appConfiguration } from "../configuration/config";
 
 const SingleRoutes = () => {
   const [searchParams] = useSearchParams();
@@ -15,10 +16,17 @@ const SingleRoutes = () => {
   const [destination, setDestination] = useState(query);
   const [isSearchingOrigin, setIsSearchingOrigin] = useState(false);
   const [isSearchingDestination, setIsSearchingDestination] = useState(false);
-  const [originSuggestions, setOriginSuggestions] = useState<LocationResult[]>([]);
-  const [destinationSuggestions, setDestinationSuggestions] = useState<LocationResult[]>([]);
+  const [originSuggestions, setOriginSuggestions] = useState<LocationResult[]>(
+    []
+  );
+  const [destinationSuggestions, setDestinationSuggestions] = useState<
+    LocationResult[]
+  >([]);
+  const [routeAlts, setRouteAlts] = useState(false);
 
-  const handleOriginInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleOriginInputChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const newQuery = e.target.value;
     setOrigin(newQuery);
     setOriginSuggestions([]);
@@ -36,7 +44,9 @@ const SingleRoutes = () => {
     }
   };
 
-  const handleDestinationInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDestinationInputChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const newQuery = e.target.value;
     setDestination(newQuery);
     setDestinationSuggestions([]);
@@ -54,7 +64,10 @@ const SingleRoutes = () => {
     }
   };
 
-  const handleSelectSuggestion = (location: LocationResult, isOrigin: boolean) => {
+  const handleSelectSuggestion = (
+    location: LocationResult,
+    isOrigin: boolean
+  ) => {
     if (isOrigin) {
       setOrigin(location.place_name);
       setOriginSuggestions([]);
@@ -64,8 +77,41 @@ const SingleRoutes = () => {
     }
   };
 
-  const handleSubmit = () => {
-     console.log("Submitted:", { origin, destination });
+  const handleSubmit = async () => {
+    try {
+      const [originResult] = await GeocoderService.searchLocations(origin);
+      const [destinationResult] = await GeocoderService.searchLocations(
+        destination
+      );
+
+      if (!origin || !destination || !originResult || !destinationResult) {
+        alert("Enter valid origin and destination");
+        return;
+      }
+
+      const routingEngine =
+        appConfiguration.routingEngines[appConfiguration.defaultRoutingEngine];
+      const routes = await routingEngine.getRoute({
+        origin: {
+          longitude: originResult.coordinates[0],
+          latitude: originResult.coordinates[1],
+        },
+        destination: {
+          longitude: destinationResult.coordinates[0],
+          latitude: destinationResult.coordinates[1],
+        },
+        wheelchair: false,
+        modes: [TransportationMode.TRANSIT],
+      });
+      console.log("🚀 ~ handleSubmit ~ originResult:", [
+        originResult,
+        destinationResult,
+      ]);
+    } catch (error) {
+      console.log("🚀 ~ handleSubmit ~ error:", error);
+      console.error("Error getting route:", error);
+      alert("Something went wrong while fetching your route.");
+    }
   };
 
   // Mock route options
@@ -138,7 +184,11 @@ const SingleRoutes = () => {
   }, [query]);
 
   const handleRouteSelect = (routeId: string) => {
-    navigate(`/route/${routeId}?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`);
+    navigate(
+      `/route/${routeId}?origin=${encodeURIComponent(
+        origin
+      )}&destination=${encodeURIComponent(destination)}`
+    );
   };
 
   return (
@@ -172,13 +222,15 @@ const SingleRoutes = () => {
                     value={origin}
                     onChange={handleOriginInputChange}
                   />
-                  
+
                   {/* Origin Loading State */}
                   {isSearchingOrigin && (
                     <div className="absolute z-[1000] w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
                       <div className="flex justify-center items-center">
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-500 mr-2"></div>
-                        <span className="text-sm text-gray-600">Searching origins...</span>
+                        <span className="text-sm text-gray-600">
+                          Searching origins...
+                        </span>
                       </div>
                     </div>
                   )}
@@ -190,17 +242,26 @@ const SingleRoutes = () => {
                         <div
                           key={`origin-${index}`}
                           className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors duration-150 flex items-start"
-                          onClick={() => handleSelectSuggestion(suggestion, true)}
+                          onClick={() =>
+                            handleSelectSuggestion(suggestion, true)
+                          }
                         >
                           <div className="mr-3 mt-0.5">
-                            <MapPin size={16} className="text-red-500 flex-shrink-0" />
+                            <MapPin
+                              size={16}
+                              className="text-red-500 flex-shrink-0"
+                            />
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-900 truncate">
                               {suggestion.place_name.split(",")[0]}
                             </p>
                             <p className="text-xs text-gray-500 truncate">
-                              {suggestion.place_name.split(",").slice(1).join(",").trim()}
+                              {suggestion.place_name
+                                .split(",")
+                                .slice(1)
+                                .join(",")
+                                .trim()}
                             </p>
                           </div>
                         </div>
@@ -223,13 +284,15 @@ const SingleRoutes = () => {
                     value={destination}
                     onChange={handleDestinationInputChange}
                   />
-                  
+
                   {/* Destination Loading State */}
                   {isSearchingDestination && (
                     <div className="absolute z-[1000] w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
                       <div className="flex justify-center items-center">
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-500 mr-2"></div>
-                        <span className="text-sm text-gray-600">Searching destinations...</span>
+                        <span className="text-sm text-gray-600">
+                          Searching destinations...
+                        </span>
                       </div>
                     </div>
                   )}
@@ -241,17 +304,26 @@ const SingleRoutes = () => {
                         <div
                           key={`dest-${index}`}
                           className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors duration-150 flex items-start"
-                          onClick={() => handleSelectSuggestion(suggestion, false)}
+                          onClick={() =>
+                            handleSelectSuggestion(suggestion, false)
+                          }
                         >
                           <div className="mr-3 mt-0.5">
-                            <MapPin size={16} className="text-red-500 flex-shrink-0" />
+                            <MapPin
+                              size={16}
+                              className="text-red-500 flex-shrink-0"
+                            />
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-900 truncate">
                               {suggestion.place_name.split(",")[0]}
                             </p>
                             <p className="text-xs text-gray-500 truncate">
-                              {suggestion.place_name.split(",").slice(1).join(",").trim()}
+                              {suggestion.place_name
+                                .split(",")
+                                .slice(1)
+                                .join(",")
+                                .trim()}
                             </p>
                           </div>
                         </div>
@@ -262,9 +334,11 @@ const SingleRoutes = () => {
               </div>
             </div>
           </div>
-          <button className=" mt-5 w-full p-2 border-stone-50 bg-gray-400 rounded-2xl focus:border-red-300 focus:outline-none"
-          onClick={handleSubmit}>
-Search
+          <button
+            className=" mt-5 w-full p-2 border-stone-50 bg-gray-400 rounded-2xl focus:border-red-300 focus:outline-none"
+            onClick={handleSubmit}
+          >
+            Search
           </button>
         </div>
       </div>
