@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Layout from "../layouts/Layout";
-import { ArrowLeft, MapPin, Clock, DollarSign, ArrowRight } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, ArrowRight } from "lucide-react";
 import { Button } from "../assets/Button";
 import { cn } from "../lib/utils";
-import { LocationResult, TransportationMode } from "../types/mapTypes";
+import {
+  LocationResult,
+  TransportationMode,
+  RouteStep,
+  RouteOption,
+} from "../types/mapTypes";
 import { GeocoderService } from "../services/GeocoderService";
 import { appConfiguration } from "../configuration/config";
 
@@ -14,6 +19,10 @@ const SingleRoutes = () => {
   const query = searchParams.get("q") || "";
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState(query);
+  const [originResults, setOriginResults] = useState<LocationResult[]>([]);
+  const [destinationResults, setDestinationResults] = useState<
+    LocationResult[]
+  >([]);
   const [isSearchingOrigin, setIsSearchingOrigin] = useState(false);
   const [isSearchingDestination, setIsSearchingDestination] = useState(false);
   const [originSuggestions, setOriginSuggestions] = useState<LocationResult[]>(
@@ -22,7 +31,7 @@ const SingleRoutes = () => {
   const [destinationSuggestions, setDestinationSuggestions] = useState<
     LocationResult[]
   >([]);
-  const [routeAlts, setRouteAlts] = useState(false);
+  const [routeOptions, setRouteOptions] = useState<RouteOption[]>([]);
 
   const handleOriginInputChange = async (
     e: React.ChangeEvent<HTMLInputElement>
@@ -36,6 +45,7 @@ const SingleRoutes = () => {
       try {
         const results = await GeocoderService.searchLocations(newQuery);
         setOriginSuggestions(results);
+        setOriginResults(results);
       } catch (error) {
         console.error("Error fetching origin suggestions:", error);
       } finally {
@@ -56,6 +66,7 @@ const SingleRoutes = () => {
       try {
         const results = await GeocoderService.searchLocations(newQuery);
         setDestinationSuggestions(results);
+        setDestinationResults(results);
       } catch (error) {
         console.error("Error fetching destination suggestions:", error);
       } finally {
@@ -77,111 +88,134 @@ const SingleRoutes = () => {
     }
   };
 
-  const handleSubmit = async () => {
-    try {
-      const [originResult] = await GeocoderService.searchLocations(origin);
-      const [destinationResult] = await GeocoderService.searchLocations(
-        destination
-      );
+  const routingEngine =
+    appConfiguration.routingEngines[appConfiguration.defaultRoutingEngine];
 
-      if (!origin || !destination || !originResult || !destinationResult) {
-        alert("Enter valid origin and destination");
+  const routes = async () => {
+    try {
+      // Ensure we have valid coordinates
+      if (!originResults[0] || !destinationResults[0]) {
+        alert("Please select valid origin and destination locations");
         return;
       }
 
-      const routingEngine =
-        appConfiguration.routingEngines[appConfiguration.defaultRoutingEngine];
-      const routes = await routingEngine.getRoute({
+      const routingResponse = await routingEngine.getRoute({
         origin: {
-          longitude: originResult.coordinates[0],
-          latitude: originResult.coordinates[1],
+          latitude: originResults[0].coordinates[1],
+          longitude: originResults[0].coordinates[0],
         },
         destination: {
-          longitude: destinationResult.coordinates[0],
-          latitude: destinationResult.coordinates[1],
+          latitude: destinationResults[0].coordinates[1],
+          longitude: destinationResults[0].coordinates[0],
         },
         wheelchair: false,
-        modes: [TransportationMode.TRANSIT],
+        modes: [TransportationMode.TRANSIT, TransportationMode.WALK],
       });
-      console.log("🚀 ~ handleSubmit ~ originResult:", [
-        originResult,
-        destinationResult,
-      ]);
+
+ 
+      // Extract itineraries from the response structure
+      const itineraries = routingResponse || [];
+      const transformedRoutes = transformRoutingResponse(itineraries);
+       setRouteOptions(transformedRoutes);
     } catch (error) {
-      console.log("🚀 ~ handleSubmit ~ error:", error);
       console.error("Error getting route:", error);
       alert("Something went wrong while fetching your route.");
     }
   };
 
-  // Mock route options
-  const routeOptions = [
-    {
-      id: "route-1",
-      duration: "35 min",
-      fare: "₵5.00",
-      steps: [
-        {
-          type: "walk",
-          duration: "5 min",
-          description: "Walk to Kwame Nkrumah Circle",
-        },
-        {
-          type: "bus",
-          duration: "25 min",
-          line: "Accra-Tema",
-          description: "Bus to East Legon",
-        },
-        { type: "walk", duration: "5 min", description: "Walk to destination" },
-      ],
-    },
-    {
-      id: "route-2",
-      duration: "45 min",
-      fare: "₵3.50",
-      steps: [
-        {
-          type: "walk",
-          duration: "3 min",
-          description: "Walk to Kaneshie Station",
-        },
-        {
-          type: "trotro",
-          duration: "30 min",
-          line: "Circle-East Legon",
-          description: "Trotro to A&C Mall",
-        },
-        {
-          type: "walk",
-          duration: "12 min",
-          description: "Walk to destination",
-        },
-      ],
-    },
-    {
-      id: "route-3",
-      duration: "50 min",
-      fare: "₵4.00",
-      steps: [
-        {
-          type: "walk",
-          duration: "7 min",
-          description: "Walk to Adabraka Station",
-        },
-        {
-          type: "trotro",
-          duration: "40 min",
-          line: "Adabraka-Airport",
-          description: "Trotro via Ring Road",
-        },
-        { type: "walk", duration: "3 min", description: "Walk to destination" },
-      ],
-    },
-  ];
+  const handleSubmit = () => {
+    if (
+      !origin ||
+      !destination ||
+      !originResults.length ||
+      !destinationResults.length ||
+      !originResults[0] ||
+      !destinationResults[0]
+    ) {
+      alert("Enter valid origin and destination");
+      return;
+    }
+    routes();
+  };
 
   useEffect(() => {
-    console.log("Searching for routes to:", query);
+    const fetchCoordinates = async () => {
+      if (query) {
+        setIsSearchingDestination(true);
+        try {
+          const results = await GeocoderService.searchLocations(query);
+          if (results.length > 0) {
+            setDestinationResults(results);
+          }
+        } catch (error) {
+          console.error("Failed to fetch destination coordinates:", error);
+        } finally {
+          setIsSearchingDestination(false);
+        }
+      }
+    };
+
+    fetchCoordinates();
   }, [query]);
+
+  const transformRoutingResponse = (itineraries: any[]): RouteOption[] => {
+    if (!Array.isArray(itineraries)) {
+      return [];
+    }
+
+    return itineraries.map((itinerary, index) => {
+      // Calculate total duration in minutes
+      const durationMinutes = Math.round(itinerary.duration / 60);
+      const hours = Math.floor(durationMinutes / 60);
+      const minutes = durationMinutes % 60;
+      const durationText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+
+      // Format start and end times
+      const startTime = new Date(itinerary.startTime).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const endTime = new Date(itinerary.endTime).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      // Transform legs to steps
+      const steps: RouteStep[] = itinerary.legs.map((leg: any) => {
+        const stepDurationMinutes = Math.round(leg.duration / 60);
+        const stepDurationText = `${stepDurationMinutes} min`;
+
+        if (leg.mode === "WALK") {
+          return {
+            type: "walk",
+            description: `Walk to ${leg.to?.name || "next stop"}`,
+            duration: stepDurationText,
+            line: null,
+          };
+        } else {
+           const lineName = leg.routeLongName || leg.routeId?.split(":")[1] || leg.mode;
+          return {
+            type: "transit",
+            description: `Take ${leg.routeLongName} Trotro to ${
+              leg.to?.name || "destination"
+            }`,
+            duration: stepDurationText,
+            line: lineName,
+          };
+        }
+      });
+
+      return {
+        id: `route-${index}`,
+        duration: durationText,
+        steps,
+        transfers: itinerary.transfers || 0,
+        walkDistance: Math.round(itinerary.walkDistance || 0),
+        startTime,
+        endTime,
+      };
+    });
+  };
 
   const handleRouteSelect = (routeId: string) => {
     navigate(
@@ -190,10 +224,8 @@ const SingleRoutes = () => {
       )}&destination=${encodeURIComponent(destination)}`
     );
   };
-
   return (
     <Layout>
-      {/* Hero Section with Gradient Background */}
       <div className="bg-gradient-to-r from-red-600 to-red-800 p-6 relative z-20">
         <div className="absolute inset-0 bg-black opacity-10 pattern-diagonal-lines pattern-white pattern-bg-transparent pattern-size-2 pattern-opacity-5"></div>
         <div className="container mx-auto max-w-lg relative z-10">
@@ -206,7 +238,6 @@ const SingleRoutes = () => {
             Back
           </Button>
 
-          {/* Search Container */}
           <div className="relative">
             <div className="bg-white rounded-xl p-5 shadow-lg transform transition-all hover:shadow-xl">
               {/* Origin Input */}
@@ -223,7 +254,6 @@ const SingleRoutes = () => {
                     onChange={handleOriginInputChange}
                   />
 
-                  {/* Origin Loading State */}
                   {isSearchingOrigin && (
                     <div className="absolute z-[1000] w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
                       <div className="flex justify-center items-center">
@@ -235,7 +265,6 @@ const SingleRoutes = () => {
                     </div>
                   )}
 
-                  {/* Origin Suggestions */}
                   {originSuggestions.length > 0 && (
                     <div className="absolute z-[1000] w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
                       {originSuggestions.map((suggestion, index) => (
@@ -271,7 +300,6 @@ const SingleRoutes = () => {
                 </div>
               </div>
 
-              {/* Destination Input */}
               <div className="flex items-center gap-3 relative">
                 <div className="rounded-full bg-red-100 p-2">
                   <MapPin className="text-red-500" size={22} />
@@ -285,7 +313,6 @@ const SingleRoutes = () => {
                     onChange={handleDestinationInputChange}
                   />
 
-                  {/* Destination Loading State */}
                   {isSearchingDestination && (
                     <div className="absolute z-[1000] w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
                       <div className="flex justify-center items-center">
@@ -297,7 +324,6 @@ const SingleRoutes = () => {
                     </div>
                   )}
 
-                  {/* Destination Suggestions */}
                   {destinationSuggestions.length > 0 && (
                     <div className="absolute z-[1000] w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
                       {destinationSuggestions.map((suggestion, index) => (
@@ -343,8 +369,7 @@ const SingleRoutes = () => {
         </div>
       </div>
 
-      {/* Route Options */}
-      <div className="container mx-auto max-w-lg p-4 relative z-10">
+       <div className="container mx-auto max-w-lg p-4 relative z-10">
         <h2 className="text-xl font-bold mb-6 flex items-center">
           <span className="bg-red-100 text-red-500 p-1 rounded-md mr-2">
             <Clock size={18} />
@@ -352,67 +377,75 @@ const SingleRoutes = () => {
           Route Options
         </h2>
 
-        {routeOptions.map((route, index) => (
-          <div
-            key={route.id}
-            className="bg-white rounded-xl shadow-md mb-5 overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100"
-          >
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 flex justify-between items-center">
-              <div className="flex items-center">
-                <Clock size={16} className="text-red-500 mr-2" />
-                <div className="font-medium">{route.duration}</div>
+        {routeOptions.length === 0 ? (
+          <div className="text-gray-500 text-center">
+            No routes found. Try searching!
+          </div>
+        ) : (
+          routeOptions.map((route, index) => (
+            <div
+              key={route.id}
+              className="bg-white rounded-xl shadow-md mb-5 overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100"
+            >
+               <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center">
+                    <Clock size={16} className="text-red-500 mr-2" />
+                    <div className="font-medium">{route.duration}</div>
+                  </div>
+ 
+                </div>
               </div>
-              <div className="flex items-center">
-                <DollarSign size={16} className="text-green-600 mr-1" />
-                <div className="font-medium">{route.fare}</div>
-              </div>
-            </div>
-            <div className="p-4">
-              {route.steps.map((step, idx) => (
-                <div key={idx} className="mb-3 last:mb-0">
-                  <div className="flex gap-3">
-                    <div
-                      className={`rounded-full w-8 h-8 flex items-center justify-center text-white ${
-                        step.type === "walk"
-                          ? "bg-gradient-to-br from-gray-500 to-gray-600"
-                          : "bg-gradient-to-br from-red-500 to-red-600"
-                      }`}
-                    >
-                      {step.type === "walk" ? "🚶" : "🚌"}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium">{step.description}</div>
-                      <div className="text-sm text-gray-500 flex items-center">
-                        <Clock size={14} className="mr-1 inline" />
-                        {step.duration}{" "}
-                        {step.line && (
-                          <span className="ml-2 bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-xs">
-                            {step.line}
-                          </span>
-                        )}
+
+              {/* Route steps */}
+              <div className="p-4">
+                {route.steps.map((step, idx) => (
+                  <div key={idx} className="mb-3 last:mb-0">
+                    <div className="flex gap-3">
+                      <div
+                        className={`rounded-full w-8 h-8 flex items-center justify-center text-white ${
+                          step.type === "walk"
+                            ? "bg-gradient-to-br from-gray-500 to-gray-600"
+                            : "bg-gradient-to-br from-red-500 to-red-600"
+                        }`}
+                      >
+                        {step.type === "walk" ? "🚶" : "🚌"}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium">{step.description}</div>
+                        <div className="text-sm text-gray-500 flex items-center">
+                          <Clock size={14} className="mr-1 inline" />
+                          {step.duration}
+                          {step.line && (
+                            <span className="ml-2 bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-xs">
+                              Route {step.line}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
+                    {idx < route.steps.length - 1 && (
+                      <div className="border-l-2 border-dashed border-gray-300 h-6 ml-4 my-1"></div>
+                    )}
                   </div>
-                  {idx < route.steps.length - 1 && (
-                    <div className="border-l-2 border-dashed border-gray-300 h-6 ml-4 my-1"></div>
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
+
+               <Button
+                className={cn(
+                  "w-full rounded-none text-white flex justify-between items-center py-3",
+                  index === 0
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-red-400 hover:bg-red-500"
+                )}
+                onClick={() => handleRouteSelect(route.id)}
+              >
+                <span>Select This Route</span>
+                <ArrowRight size={18} />
+              </Button>
             </div>
-            <Button
-              className={cn(
-                "w-full rounded-none text-white flex justify-between items-center py-3",
-                index === 0
-                  ? "bg-red-500 hover:bg-red-600"
-                  : "bg-red-400 hover:bg-red-500"
-              )}
-              onClick={() => handleRouteSelect(route.id)}
-            >
-              <span>Select This Route</span>
-              <ArrowRight size={18} />
-            </Button>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </Layout>
   );

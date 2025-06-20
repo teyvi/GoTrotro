@@ -1,4 +1,4 @@
- import {
+import {
   RoutingRequest,
   Itinerary,
   Leg,
@@ -13,7 +13,7 @@
 export class OtpAdapter implements RoutingAdapter {
 
   private otpEndpointURL: URL;
-  private static DEFAULT_MAX_WALK_DISTANCE = 0.5;
+  private static DEFAULT_MAX_WALK_DISTANCE = 3500;
 
   constructor(otpEndpointURL: URL | string) {
     if (typeof otpEndpointURL === "string") {
@@ -29,6 +29,10 @@ export class OtpAdapter implements RoutingAdapter {
 
   public async getRoute(options: RoutingRequest): Promise<Itinerary[]> {
     const now = new Date();
+const TransportationModeMap: Record<number, string> = {
+  [TransportationMode.TRANSIT]: "TRANSIT",
+  [TransportationMode.WALK]: "WALK",
+  }
 
     const params = new URLSearchParams({
       fromPlace: `${options.origin.latitude},${options.origin.longitude}`,
@@ -39,12 +43,17 @@ export class OtpAdapter implements RoutingAdapter {
         hour12: true,
       }),
       date: `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}-${now.getFullYear()}`,
-      mode: "TRANSIT", // TODO: change this once this is configurable either in the app configuration or in the GUI by the user
+      mode: options.modes
+  ? options.modes.map((mode) => TransportationModeMap[mode]).join(",")
+  : "TRANSIT,WALK",
+ // TODO: change this once this is configurable either in the app configuration or in the GUI by the user
       maxWalkDistance: OtpAdapter.DEFAULT_MAX_WALK_DISTANCE.toString(),
       arriveBy: "false",
       wheelchair: String(options.wheelchair),
       locale: "en", //TODO: Make aware of multiple languages
     });
+
+    console.log(`${this.otpEndpointURL}?${params.toString()}`);
 
     const response = await fetch(`${this.otpEndpointURL}?${params}`);
     if (response.headers.get("Content-Type") !== "application/json") {
@@ -52,45 +61,20 @@ export class OtpAdapter implements RoutingAdapter {
     }
     const data = await response.json();
 
-    const itineraries: Itinerary[] = [];
-    if(data.plan.Itinerary !== undefined){
-      throw new Error ("No itinerary")
+    if (data.error) {
+      throw new Error(data.error.msg || "OTP API error");
     }
+
+    const itineraries: Itinerary[] = [];
+  if (!data.plan?.itineraries) throw new Error("No itinerary");
+
     for (const jsonItinerary of data.plan.itineraries) {
       itineraries.push(this.parseItinerary(jsonItinerary))
     }
 
     return itineraries;
-
-    //   const itinerary = data.plan.itineraries[0];
-    //   return {
-    //     destination: itinerary.destination,
-    //     origin: itinerary.origin,
-    //     itineraries: itinerary.itineraries,
-    //     primaryItinerary: itinerary.primaryItinerary,
-    //   };
-    // }
-
-    // export const createOTPAdapter = (): IOTPEngine => {
-    //   const formatTime = (date: Date) =>
-    //     date
-    //       .toLocaleTimeString("en-US", {
-    //         hour: "2-digit",
-    //         minute: "2-digit",
-    //         hour12: true,
-    //       })
-    //       .toLowerCase();
-
-    //   const formatDate = (date: Date) =>
-    //     `${String(date.getMonth() + 1).padStart(2, "0")}-${String(
-    //       date.getDate()
-    //     ).padStart(2, "0")}-${date.getFullYear()}`;
-
-    //   return {
-
-    //   };
-    // };
   }
+
 
   private parseStep(jsonStep: any, geometry: Array<any>): Step {
     const step: Step = {
@@ -155,27 +139,36 @@ export class OtpAdapter implements RoutingAdapter {
 
     return step;
   }
+private parseLeg(jsonLeg: any, geometry: Array<any>): Leg {
+  return {
+    mode: jsonLeg.mode, // keep as string for UI checks like leg.mode === "WALK"
+    name: jsonLeg.route,
+     routeLongName: jsonLeg.routeLongName,
+    routeId: jsonLeg.routeId,
+    to: jsonLeg.to,
+    from: jsonLeg.from,
+    duration: jsonLeg.duration,
+    steps: Array.isArray(jsonLeg.steps)
+      ? jsonLeg.steps.map((jsonStep: any) => this.parseStep(jsonStep, geometry))
+      : [],
+  };
+}
 
-  private parseLeg(jsonLeg: any, geometry: Array<any>): Leg {
-    return {
-      // strings here are the same as our enum TransportationMode. As long as this is the case we can skip explicit type casting/declaration.
-      mode: (jsonLeg.mode as unknown as TransportationMode),
-      name: jsonLeg.route,
-      steps: (jsonLeg.steps as Array<any>).map((jsonStep) => this.parseStep(jsonStep, geometry))
-    }
-  }
+private parseItinerary(jsonItinerary: any): Itinerary {
+  let geometry: Array<any> = [];
 
-  private parseItinerary(jsonItinerary: any): Itinerary {
-    let geometry: Array<any> = [];
-
-    return {
-      duration: jsonItinerary.duration,
-      startTime: new Date(jsonItinerary.startTime), // unix epoch format
-      endTime: new Date(jsonItinerary.endTime), // unix epoch format
-      legs: (jsonItinerary.legs as Array<any>).map((jsonLeg) => this.parseLeg(jsonLeg, geometry)),
-      distance: jsonItinerary.walkDistance,
-      // @ts-expect-error
-      geometry: geometry
-    }
-  }
+  return {
+    duration: jsonItinerary.duration,
+    startTime: new Date(jsonItinerary.startTime),
+    endTime: new Date(jsonItinerary.endTime),
+    legs: Array.isArray(jsonItinerary.legs)
+      ? jsonItinerary.legs.map((jsonLeg: any) => this.parseLeg(jsonLeg, geometry))
+      : [],
+    distance: jsonItinerary.walkDistance,
+    transfers: jsonItinerary.transfers ?? 0,
+    walkDistance: jsonItinerary.walkDistance ?? 0,
+    // @ts-expect-error
+    geometry: geometry,
+  };
+}
 }

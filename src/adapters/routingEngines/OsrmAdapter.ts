@@ -43,9 +43,9 @@ export class OSRMAdapter implements RoutingAdapter {
     const data = await response.json();
     const itineraries: Itinerary[] = [];
 
-    for (const jsonItinerary of data.routes) {
-      itineraries.push(this.parseItinerary(jsonItinerary, options))
-    }
+    // for (const jsonItinerary of data.routes) {
+    //   itineraries.push(this.parseItinerary(jsonItinerary, options))
+    // }
 
     return itineraries;
   }
@@ -140,27 +140,29 @@ export class OSRMAdapter implements RoutingAdapter {
     return step;
   }
 
-  private parseLeg(jsonLeg: any, options: RoutingRequest): Leg {
-    return {
-      name: jsonLeg.summary,
-      mode: options.modes[0],
-      steps: (jsonLeg.steps as Array<any>).map((jsonStep) => this.parseStep(jsonStep))
-    }
-  }
+  // private parseLeg(jsonLeg: any, options: RoutingRequest): Leg {
+  //   return {
+  //     name: jsonLeg.summary,
+  //     mode: options.modes[0],
+  //     steps: (jsonLeg.steps as Array<any>).map((jsonStep) => this.parseStep(jsonStep))
 
-  private parseItinerary(jsonItinerary: any, options: RoutingRequest): Itinerary {
-    const startTime: Date = new Date();
-    const endTime: number = startTime.getSeconds() + jsonItinerary.duration;
+  //   }
+  // }
 
-    return {
-      duration: jsonItinerary.duration,
-      startTime: new Date(),
-      endTime: new Date(endTime),
-      legs: (jsonItinerary.legs as Array<any>).map((jsonLeg) => this.parseLeg(jsonLeg, options)),
-      distance: jsonItinerary.distance,
-      geometry: jsonItinerary.geometry.coordinates
-    }
-  }
+  // private parseItinerary(jsonItinerary: any, options: RoutingRequest): Itinerary {
+  //   const startTime: Date = new Date();
+  //   const endTime: number = startTime.getSeconds() + jsonItinerary.duration;
+
+  //   return {
+  //     duration: jsonItinerary.duration,
+  //     startTime: new Date(),
+  //     endTime: new Date(endTime),
+  //     legs: (jsonItinerary.legs as Array<any>).map((jsonLeg) => this.parseLeg(jsonLeg, options)),
+  //     distance: jsonItinerary.distance,
+  //     geometry: jsonItinerary.geometry.coordinates,
+  //     plan: jsonItinerary.geometry.coordinates,
+  //   }
+  // }
 
 }
 
