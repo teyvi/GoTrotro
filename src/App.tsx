@@ -1,33 +1,24 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import './App.css';
-import HomeLayout from './layouts/HomeLayout';
-import Home from './pages/HomePage';
-import Feedback from './pages/Feedback';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import React from 'react';
- 
+import { BrowserRouter, Route, Routes as RouterRoutes } from "react-router-dom";
+import "./App.css";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Home from "./pages/HomePage";
+import React from "react";
+import SingleRoutes from "./pages/Routes";
+import RouteDetails from "./pages/RouteDetails";
+
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <div>
+    <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <HomeLayout pageTitle="Home Page">
-                <Home />
-              </HomeLayout>
-            }
-          />
-          <Route index element={<Home />} />
-          <Route path="/sendfeedback" element={<Feedback />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-\        </Routes>
+        <RouterRoutes>
+          <Route path="/" element={<Home />} />
+          <Route path="/routes" element={<SingleRoutes />} />
+          <Route path="/route/:id" element={<RouteDetails />} />
+        </RouterRoutes>
       </BrowserRouter>
-    </div>
+    </QueryClientProvider>
   );
 }
 

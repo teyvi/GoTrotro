@@ -39,8 +39,7 @@ function MapComponent() {
 
   const calculateRoute = useCallback(
     async () => {
-      console.log("route calculation");
-      if (!originMarker || !destinationMarker) return;
+       if (!originMarker || !destinationMarker) return;
 
       setLoading(true);
       try {
@@ -103,8 +102,7 @@ function MapComponent() {
 
   const fitMapToMarkers = useCallback(
     debounce(() => {
-      console.log("fitMapToMarkers");
-      if (mapRef.current && originMarker && destinationMarker) {
+       if (mapRef.current && originMarker && destinationMarker) {
         const bounds: [[number, number], [number, number]] = [
           [originMarker.coordinates.longitude, originMarker.coordinates.latitude],
           [destinationMarker.coordinates.longitude, destinationMarker.coordinates.latitude],
@@ -119,8 +117,7 @@ function MapComponent() {
   );
 
   useEffect(() => {
-    console.log("execute code to update markers");
-    if (origin?.coordinates) {
+     if (origin?.coordinates) {
       setOriginMarker({
           coordinates: {
             longitude: origin.coordinates[0],
@@ -141,8 +138,7 @@ function MapComponent() {
     }
 
     if (origin?.coordinates && destination?.coordinates) {
-      console.log("call calculateRoute");
-      fitMapToMarkers();
+       fitMapToMarkers();
       calculateRoute();
     } else if (origin?.coordinates) {
       flyToLocation(origin.coordinates[0], origin.coordinates[1]);
@@ -168,8 +164,7 @@ function MapComponent() {
     []
   );
 
-  console.log("🚀 ~ MapComponent ~ routeData:", routeData)
-  return (
+   return (
     <>
       <Map
         ref={mapRef}

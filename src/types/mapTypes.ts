@@ -52,11 +52,12 @@ export type GeocoderInputProps = {
 // Define our location result type for better type safety
 export type LocationResult = {
   place_name: string;
-  coordinates: [number, number]; // [longitude, latitude]
+  coordinates: [number, number]; 
   properties: Record<string, any>;
   center: [number, number]
   latitude: number,
   longitude: number,
+   id?: string;
 };
 
 export type LocationContextType = {
@@ -115,9 +116,15 @@ export type Leg = {
   name: string,
   mode: TransportationMode,
   steps: Step[]
-}
+  routeLongName: string
+  routeId: string,
+  to: string,
+  from: string,
+  duration: number,
+ }
 
 export type Itinerary = {
+  plan: string,
   distance: number,
   duration: number,
   startTime: Date,
@@ -135,7 +142,21 @@ export type Step = {
   stepType: StepType
 }
 
+  export type RouteStep = {
+    type: string;
+    description: string;
+    duration: string;
+    line?: string;
+  };
+
+  export type RouteOption = {
+    id: string;
+    duration: string;
+     steps: RouteStep[];
+  }; 
+
 export type RoutingResponse = {
+
 
 }
 
