@@ -4,37 +4,6 @@ import LocationCard from "../components/LocationCard";
 import Layout from "../layouts/Layout";
 
 function Home() {
-  const frequentLocations = [
-    {
-      id: 1,
-      name: "Circle Interchange",
-      district: "Central Accra",
-      type: "bus" as const,
-      code: "C",
-    },
-    {
-      id: 2,
-      name: "Accra Mall",
-      district: "East Legon",
-      type: "bus" as const,
-      code: "AM",
-    },
-    {
-      id: 3,
-      name: "Kaneshie Market",
-      district: "Kaneshie",
-      type: "metro" as const,
-      code: "KM",
-    },
-    {
-      id: 4,
-      name: "Makola Market",
-      district: "Central Accra",
-      type: "tram" as const,
-      code: "M",
-    },
-  ];
-
   return (
     <>
       <Layout>
@@ -51,17 +20,6 @@ function Home() {
               <h2 className="text-xl text-white font-bold mb-4">
                 Frequently used
               </h2>
-
-              {frequentLocations.map((location) => (
-                <LocationCard
-                  key={location.id}
-                  name={location.name}
-                  district={location.district}
-                  type={location.type}
-                  code={location.code}
-                  onClick={() => console.log(`Selected ${location.name}`)}
-                />
-              ))}
             </div>
           </div>
         </div>
