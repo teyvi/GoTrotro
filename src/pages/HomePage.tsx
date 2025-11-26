@@ -1,7 +1,5 @@
-import React from "react";
-import SearchBar from "../components/Search";
-import LocationCard from "../components/LocationCard";
-import Layout from "../layouts/Layout";
+ import SearchBar from "../components/Search";
+ import Layout from "../layouts/Layout";
 
 function Home() {
   return (
