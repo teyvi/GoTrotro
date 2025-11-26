@@ -14,14 +14,6 @@ function Home() {
               <SearchBar />
             </div>
           </div>
-
-          <div className="bg-black px-4 py-6 flex-grow">
-            <div className="container mx-auto max-w-lg">
-              <h2 className="text-xl text-white font-bold mb-4">
-                Frequently used
-              </h2>
-            </div>
-          </div>
         </div>
       </Layout>
     </>
