@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Layout from '../layouts/Layout';
-import { ArrowLeft, MapPin, Bell,Ticket } from 'lucide-react';
+ import { ArrowLeft, MapPin, Bell,Ticket } from 'lucide-react';
 import { Button } from '../assets/Button';
 
 
@@ -79,7 +78,7 @@ const RouteDetails = () => {
   }
 
   return (
-    <Layout>
+    <>
       <div className="flex flex-col min-h-screen">
         {/* Map section */}
         <div className="relative w-full h-80">
@@ -206,7 +205,7 @@ const RouteDetails = () => {
           </Button>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 

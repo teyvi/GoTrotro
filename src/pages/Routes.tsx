@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import Layout from "../layouts/Layout";
-import { ArrowLeft, MapPin, Clock, ArrowRight } from "lucide-react";
+ import { ArrowLeft, MapPin, Clock, ArrowRight } from "lucide-react";
 import { Button } from "../assets/Button";
 import { cn } from "../lib/utils";
 import {
@@ -225,8 +224,8 @@ const SingleRoutes = () => {
     );
   };
   return (
-    <Layout>
-      <div className="bg-gradient-to-r from-red-600 to-red-800 p-6 relative z-20">
+    <>
+       <div className="bg-gradient-to-r from-red-600 to-red-800 p-6 relative z-20">
         <div className="absolute inset-0 bg-black opacity-10 pattern-diagonal-lines pattern-white pattern-bg-transparent pattern-size-2 pattern-opacity-5"></div>
         <div className="container mx-auto max-w-lg relative z-10">
           <Button
@@ -447,8 +446,8 @@ const SingleRoutes = () => {
           ))
         )}
       </div>
-    </Layout>
-  );
+      </>
+   );
 };
 
 export default SingleRoutes;
