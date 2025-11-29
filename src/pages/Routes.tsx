@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
- import { ArrowLeft, MapPin, Clock, ArrowRight } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, ArrowRight } from "lucide-react";
 import { Button } from "../assets/Button";
 import { cn } from "../lib/utils";
 import {
@@ -111,11 +111,10 @@ const SingleRoutes = () => {
         modes: [TransportationMode.TRANSIT, TransportationMode.WALK],
       });
 
- 
       // Extract itineraries from the response structure
       const itineraries = routingResponse || [];
       const transformedRoutes = transformRoutingResponse(itineraries);
-       setRouteOptions(transformedRoutes);
+      setRouteOptions(transformedRoutes);
     } catch (error) {
       console.error("Error getting route:", error);
       alert("Something went wrong while fetching your route.");
@@ -192,7 +191,8 @@ const SingleRoutes = () => {
             line: null,
           };
         } else {
-           const lineName = leg.routeLongName || leg.routeId?.split(":")[1] || leg.mode;
+          const lineName =
+            leg.routeLongName || leg.routeId?.split(":")[1] || leg.mode;
           return {
             type: "transit",
             description: `Take ${leg.routeLongName} Trotro to ${
@@ -225,18 +225,10 @@ const SingleRoutes = () => {
   };
   return (
     <>
-       <div className="bg-gradient-to-r from-red-600 to-red-800 p-6 relative z-20">
+      <div className="bg-gradient-to-r from-red-600 to-red-800 p-6 relative z-20">
         <div className="absolute inset-0 bg-black opacity-10 pattern-diagonal-lines pattern-white pattern-bg-transparent pattern-size-2 pattern-opacity-5"></div>
         <div className="container mx-auto max-w-lg relative z-10">
-          <Button
-            variant="ghost"
-            className="text-white mb-6 p-0 hover:bg-white/10"
-            onClick={() => window.history.back()}
-          >
-            <ArrowLeft size={20} className="mr-2" />
-            Back
-          </Button>
-
+              <h1 className="text-6xl font-bold text-white mb-6">GoTrotro</h1>
           <div className="relative">
             <div className="bg-white rounded-xl p-5 shadow-lg transform transition-all hover:shadow-xl">
               {/* Origin Input */}
@@ -368,7 +360,7 @@ const SingleRoutes = () => {
         </div>
       </div>
 
-       <div className="container mx-auto max-w-lg p-4 relative z-10">
+      <div className="container mx-auto max-w-lg p-4 relative z-10">
         <h2 className="text-xl font-bold mb-6 flex items-center">
           <span className="bg-red-100 text-red-500 p-1 rounded-md mr-2">
             <Clock size={18} />
@@ -386,13 +378,12 @@ const SingleRoutes = () => {
               key={route.id}
               className="bg-white rounded-xl shadow-md mb-5 overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100"
             >
-               <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4">
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4">
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center">
                     <Clock size={16} className="text-red-500 mr-2" />
                     <div className="font-medium">{route.duration}</div>
                   </div>
- 
                 </div>
               </div>
 
@@ -430,7 +421,7 @@ const SingleRoutes = () => {
                 ))}
               </div>
 
-               <Button
+              <Button
                 className={cn(
                   "w-full rounded-none text-white flex justify-between items-center py-3",
                   index === 0
@@ -446,8 +437,8 @@ const SingleRoutes = () => {
           ))
         )}
       </div>
-      </>
-   );
+    </>
+  );
 };
 
 export default SingleRoutes;
