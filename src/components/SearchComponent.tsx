@@ -1,7 +1,7 @@
 import React from "react";
 import { IoIosSwap } from "react-icons/io";
 import { useLocation } from "../hooks/useLocation";
-import LocationSearchInput from "./LocationSearch";
+import LocationSearchInput from "./GeocoderInput";
 
 function SearchComponent() {
   const { origin, destination, setOrigin, setDestination, swapLocations } = useLocation();

@@ -1,8 +1,7 @@
 import { BrowserRouter, Route, Routes as RouterRoutes } from "react-router-dom";
 import "./App.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
- import React from "react";
-import SingleRoutes from "./pages/Routes";
+ import SingleRoutes from "./pages/Home";
 import RouteDetails from "./pages/RouteDetails";
 
 const queryClient = new QueryClient();
