@@ -1,5 +1,10 @@
 import { LocationResult } from "../types/mapTypes";
 
+//user agent constants and request intervals
+const USER_AGENT = process.env.REACT_APP_USER_AGENT
+const MIN_REQUEST_INTERVAL = 1000;
+let requestTime = 0
+
 export class GeocoderService {
     static async searchLocations(query: string): Promise<LocationResult[]> {
       if (!query.trim()) return [];
