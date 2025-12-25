@@ -292,8 +292,8 @@ const SingleRoutes = () => {
               </div>
 
               <div className="flex items-center gap-3 relative">
-                <div className="rounded-full bg-red-100 p-2">
-                  <MapPin className="text-red-500" size={22} />
+                <div className="rounded-full bg-green-100 p-2">
+                  <MapPin className="text-green-500" size={22} />
                 </div>
                 <div className="flex-1 relative">
                   <input
