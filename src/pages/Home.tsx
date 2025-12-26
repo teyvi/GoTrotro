@@ -9,8 +9,9 @@ import {
   RouteStep,
   RouteOption,
 } from "../types/mapTypes";
-import { GeocoderService } from "../services/GeocoderService";
+import { searchLocations } from "../services/GeocoderService";
 import { appConfiguration } from "../configuration/config";
+import { useDebounce } from "../hooks/useDebounce"
 
 const SingleRoutes = () => {
   const [searchParams] = useSearchParams();
@@ -42,7 +43,7 @@ const SingleRoutes = () => {
     if (newQuery.length > 2) {
       setIsSearchingOrigin(true);
       try {
-        const results = await GeocoderService.searchLocations(newQuery);
+        const results = await searchLocations(newQuery);
         setOriginSuggestions(results);
         setOriginResults(results);
       } catch (error) {
@@ -63,7 +64,7 @@ const SingleRoutes = () => {
     if (newQuery.length > 2) {
       setIsSearchingDestination(true);
       try {
-        const results = await GeocoderService.searchLocations(newQuery);
+        const results = await searchLocations(newQuery);
         setDestinationSuggestions(results);
         setDestinationResults(results);
       } catch (error) {
@@ -141,7 +142,7 @@ const SingleRoutes = () => {
       if (query) {
         setIsSearchingDestination(true);
         try {
-          const results = await GeocoderService.searchLocations(query);
+          const results = await searchLocations(query);
           if (results.length > 0) {
             setDestinationResults(results);
           }
