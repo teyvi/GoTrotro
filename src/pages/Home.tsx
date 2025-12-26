@@ -33,47 +33,57 @@ const SingleRoutes = () => {
   >([]);
   const [routeOptions, setRouteOptions] = useState<RouteOption[]>([]);
 
-  const handleOriginInputChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const newQuery = e.target.value;
-    setOrigin(newQuery);
-    setOriginSuggestions([]);
+  // const handleOriginInputChange = async (
+  //   e: React.ChangeEvent<HTMLInputElement>
+  // ) => {
+  //   const newQuery = e.target.value;
+  //   setOrigin(newQuery);
+  //   setOriginSuggestions([]);
 
-    if (newQuery.length > 2) {
-      setIsSearchingOrigin(true);
-      try {
-        const results = await searchLocations(newQuery);
-        setOriginSuggestions(results);
-        setOriginResults(results);
-      } catch (error) {
-        console.error("Error fetching origin suggestions:", error);
-      } finally {
-        setIsSearchingOrigin(false);
-      }
-    }
-  };
+  //   if (newQuery.length > 2) {
+  //     setIsSearchingOrigin(true);
+  //     try {
+  //       const results = await searchLocations(newQuery);
+  //       setOriginSuggestions(results);
+  //       setOriginResults(results);
+  //     } catch (error) {
+  //       console.error("Error fetching origin suggestions:", error);
+  //     } finally {
+  //       setIsSearchingOrigin(false);
+  //     }
+  //   }
+  // };
 
-  const handleDestinationInputChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const newQuery = e.target.value;
-    setDestination(newQuery);
-    setDestinationSuggestions([]);
+const handleOriginInputChange = (e:React.ChangeEvent<HTMLInputElement> ) => {
+setOrigin(e.target.value);
+setOriginSuggestions([])
+}
 
-    if (newQuery.length > 2) {
-      setIsSearchingDestination(true);
-      try {
-        const results = await searchLocations(newQuery);
-        setDestinationSuggestions(results);
-        setDestinationResults(results);
-      } catch (error) {
-        console.error("Error fetching destination suggestions:", error);
-      } finally {
-        setIsSearchingDestination(false);
-      }
-    }
-  };
+const handleDestinationInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  setDestination(e.target.value);
+  setDestinationSuggestions([]);
+};
+
+  // const handleDestinationInputChange = async (
+  //   e: React.ChangeEvent<HTMLInputElement>
+  // ) => {
+  //   const newQuery = e.target.value;
+  //   setDestination(newQuery);
+  //   setDestinationSuggestions([]);
+
+  //   if (newQuery.length > 2) {
+  //     setIsSearchingDestination(true);
+  //     try {
+  //       const results = await searchLocations(newQuery);
+  //       setDestinationSuggestions(results);
+  //       setDestinationResults(results);
+  //     } catch (error) {
+  //       console.error("Error fetching destination suggestions:", error);
+  //     } finally {
+  //       setIsSearchingDestination(false);
+  //     }
+  //   }
+  // };
 
   const handleSelectSuggestion = (
     location: LocationResult,
