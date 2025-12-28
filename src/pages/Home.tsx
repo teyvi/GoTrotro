@@ -80,28 +80,26 @@ const handleSelectedDestination = (location: LocationResult) => {
   const routingEngine =
     appConfiguration.routingEngines[appConfiguration.defaultRoutingEngine];
 
-  const routes = async () => {
+  const fetchRoutes = async () => {
     try {
-      // Ensure we have valid coordinates
-      if (!originResults[0] || !destinationResults[0]) {
+      if (!selectedOrigin || !selectedDestination) {
         alert("Please select valid origin and destination locations");
         return;
       }
 
       const routingResponse = await routingEngine.getRoute({
         origin: {
-          latitude: originResults[0].coordinates[1],
-          longitude: originResults[0].coordinates[0],
+          latitude: selectedOrigin.coordinates[1],
+          longitude: selectedOrigin.coordinates[0],
         },
         destination: {
-          latitude: destinationResults[0].coordinates[1],
-          longitude: destinationResults[0].coordinates[0],
+          latitude: selectedDestination.coordinates[1],
+          longitude: selectedDestination.coordinates[0],
         },
         wheelchair: false,
         modes: [TransportationMode.TRANSIT, TransportationMode.WALK],
       });
 
-      // Extract itineraries from the response structure
       const itineraries = routingResponse || [];
       const transformedRoutes = transformRoutingResponse(itineraries);
       setRouteOptions(transformedRoutes);
