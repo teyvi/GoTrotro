@@ -9,46 +9,42 @@ import {
   RouteStep,
   RouteOption,
 } from "../types/mapTypes";
- import { appConfiguration } from "../configuration/config";
-import { useDebounce } from "../hooks/useDebounce"
-import { useLocationSearch} from "../queries/searchLocations"
+import { appConfiguration } from "../configuration/config";
+import { useDebounce } from "../hooks/useDebounce";
+import { useLocationSearch } from "../queries/searchLocations";
 
 const SingleRoutes = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
- 
+
   //location input states
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
 
- // Selected location states
-  const [selectedOrigin, setSelectedOrigin] = useState<LocationResult | null>(null);
-  const [selectedDestination, setSelectedDestination] = useState<LocationResult | null>(null);
-  
+  // Selected location states
+  const [selectedOrigin, setSelectedOrigin] = useState<LocationResult | null>(
+    null
+  );
+  const [selectedDestination, setSelectedDestination] =
+    useState<LocationResult | null>(null);
 
   // UI states
   const [showOriginSuggestions, setShowOriginSuggestions] = useState(false);
-  const [showDestinationSuggestions, setShowDestinationSuggestions] = useState(false);
+  const [showDestinationSuggestions, setShowDestinationSuggestions] =
+    useState(false);
   const [routeOptions, setRouteOptions] = useState<RouteOption[]>([]);
 
   // Debounced search values
   const debouncedOrigin = useDebounce(origin, 500);
   const debouncedDestination = useDebounce(destination, 500);
 
+  //origin location search query
+  const { data: originResults = [], isLoading: isSearchingOrigin } =
+    useLocationSearch(debouncedOrigin, showOriginSuggestions);
 
-//origin location search query
-const { 
-  data: originResults = [],
-  isLoading: isSearchingOrigin,
-} = useLocationSearch (debouncedOrigin, showOriginSuggestions);
-
-//destination location search query
-const { 
-  data: destinationResults = [],
-  isLoading: isSearchingDestination,
-} = useLocationSearch ( debouncedDestination, showDestinationSuggestions)
-
-
+  //destination location search query
+  const { data: destinationResults = [], isLoading: isSearchingDestination } =
+    useLocationSearch(debouncedDestination, showDestinationSuggestions);
 
   const handleOriginInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -57,25 +53,26 @@ const {
     setSelectedOrigin(null);
   };
 
-  const handleDestinationInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDestinationInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const value = e.target.value;
     setDestination(value);
     setShowDestinationSuggestions(true);
     setSelectedDestination(null);
   };
 
-
-  const handleSelectOrigin = ( location : LocationResult) => {
+  const handleSelectOrigin = (location: LocationResult) => {
     setOrigin(location.place_name);
     setSelectedOrigin(location);
     setShowOriginSuggestions(false);
-}
+  };
 
-const handleSelectedDestination = (location: LocationResult) => {
-  setDestination(location.place_name);
-  setSelectedDestination(location);
-  setShowDestinationSuggestions(false);
-}
+  const handleSelectedDestination = (location: LocationResult) => {
+    setDestination(location.place_name);
+    setSelectedDestination(location);
+    setShowDestinationSuggestions(false);
+  };
 
   const routingEngine =
     appConfiguration.routingEngines[appConfiguration.defaultRoutingEngine];
@@ -109,7 +106,7 @@ const handleSelectedDestination = (location: LocationResult) => {
     }
   };
 
-   const handleSubmit = () => {
+  const handleSubmit = () => {
     if (!selectedOrigin || !selectedDestination) {
       alert("Please select valid origin and destination from the suggestions");
       return;
@@ -117,20 +114,17 @@ const handleSelectedDestination = (location: LocationResult) => {
     fetchRoutes();
   };
 
-
   const transformRoutingResponse = (itineraries: any[]): RouteOption[] => {
     if (!Array.isArray(itineraries)) {
       return [];
     }
 
     return itineraries.map((itinerary, index) => {
-      // Calculate total duration in minutes
       const durationMinutes = Math.round(itinerary.duration / 60);
       const hours = Math.floor(durationMinutes / 60);
       const minutes = durationMinutes % 60;
       const durationText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
 
-      // Format start and end times
       const startTime = new Date(itinerary.startTime).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -140,7 +134,6 @@ const handleSelectedDestination = (location: LocationResult) => {
         minute: "2-digit",
       });
 
-      // Transform legs to steps
       const steps: RouteStep[] = itinerary.legs.map((leg: any) => {
         const stepDurationMinutes = Math.round(leg.duration / 60);
         const stepDurationText = `${stepDurationMinutes} min`;
@@ -180,7 +173,9 @@ const handleSelectedDestination = (location: LocationResult) => {
 
   const handleRouteSelect = (routeId: string) => {
     navigate(
-      `/route/${routeId}?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`
+      `/route/${routeId}?origin=${encodeURIComponent(
+        origin
+      )}&destination=${encodeURIComponent(destination)}`
     );
   };
   return (
@@ -188,7 +183,7 @@ const handleSelectedDestination = (location: LocationResult) => {
       <div className="bg-gradient-to-r from-red-600 to-red-800 p-6 relative z-20">
         <div className="absolute inset-0 bg-black opacity-10 pattern-diagonal-lines pattern-white pattern-bg-transparent pattern-size-2 pattern-opacity-5"></div>
         <div className="container mx-auto max-w-lg relative z-10">
-              <h1 className="text-6xl font-bold text-white mb-6">GoTrotro</h1>
+          <h1 className="text-6xl font-bold text-white mb-6">GoTrotro</h1>
           <div className="relative">
             <div className="bg-white rounded-xl p-5 shadow-lg transform transition-all hover:shadow-xl">
               {/* Origin Input */}
@@ -203,6 +198,7 @@ const handleSelectedDestination = (location: LocationResult) => {
                     className="w-full p-2 border-b focus:border-red-300 focus:outline-none transition-all"
                     value={origin}
                     onChange={handleOriginInputChange}
+                    onFocus={() => setShowOriginSuggestions(true)}
                   />
 
                   {isSearchingOrigin && (
@@ -216,41 +212,53 @@ const handleSelectedDestination = (location: LocationResult) => {
                     </div>
                   )}
 
-                  {originSuggestions.length > 0 && (
-                    <div className="absolute z-[1000] w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
-                      {originSuggestions.map((suggestion, index) => (
-                        <div
-                          key={`origin-${index}`}
-                          className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors duration-150 flex items-start"
-                          onClick={() =>
-                            handleSelectSuggestion(suggestion, true)
-                          }
-                        >
-                          <div className="mr-3 mt-0.5">
-                            <MapPin
-                              size={16}
-                              className="text-red-500 flex-shrink-0"
-                            />
+                  {showOriginSuggestions &&
+                    !isSearchingOrigin &&
+                    originResults.length > 0 && (
+                      <div className="absolute z-[1000] w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
+                        {originResults.map((suggestion, index) => (
+                          <div
+                            key={`origin-${index}`}
+                            className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors duration-150 flex items-start"
+                            onClick={() => handleSelectOrigin(suggestion)}
+                          >
+                            <div className="mr-3 mt-0.5">
+                              <MapPin
+                                size={16}
+                                className="text-red-500 flex-shrink-0"
+                              />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {suggestion.place_name.split(",")[0]}
+                              </p>
+                              <p className="text-xs text-gray-500 truncate">
+                                {suggestion.place_name
+                                  .split(",")
+                                  .slice(1)
+                                  .join(",")
+                                  .trim()}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                              {suggestion.place_name.split(",")[0]}
-                            </p>
-                            <p className="text-xs text-gray-500 truncate">
-                              {suggestion.place_name
-                                .split(",")
-                                .slice(1)
-                                .join(",")
-                                .trim()}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    )}
+
+                  {showOriginSuggestions &&
+                    !isSearchingOrigin &&
+                    debouncedOrigin.length > 2 &&
+                    originResults.length === 0 && (
+                      <div className="absolute z-[1000] w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
+                        <p className="text-sm text-gray-600 text-center">
+                          No results found
+                        </p>
+                      </div>
+                    )}
                 </div>
               </div>
 
+              {/*Destination input*/}
               <div className="flex items-center gap-3 relative">
                 <div className="rounded-full bg-green-100 p-2">
                   <MapPin className="text-green-500" size={22} />
@@ -262,55 +270,71 @@ const handleSelectedDestination = (location: LocationResult) => {
                     className="w-full p-2 border-b focus:border-red-300 focus:outline-none transition-all"
                     value={destination}
                     onChange={handleDestinationInputChange}
+                    onFocus={() => setShowDestinationSuggestions(true)}
                   />
 
-                  {isSearchingDestination && (
+                  {isSearchingDestination && showDestinationSuggestions && (
                     <div className="absolute z-[1000] w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
                       <div className="flex justify-center items-center">
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-500 mr-2"></div>
                         <span className="text-sm text-gray-600">
-                          Searching destinations...
+                          Searching...
                         </span>
                       </div>
                     </div>
                   )}
 
-                  {destinationSuggestions.length > 0 && (
-                    <div className="absolute z-[1000] w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
-                      {destinationSuggestions.map((suggestion, index) => (
-                        <div
-                          key={`dest-${index}`}
-                          className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors duration-150 flex items-start"
-                          onClick={() =>
-                            handleSelectSuggestion(suggestion, false)
-                          }
-                        >
-                          <div className="mr-3 mt-0.5">
-                            <MapPin
-                              size={16}
-                              className="text-red-500 flex-shrink-0"
-                            />
+                  {showDestinationSuggestions &&
+                    !isSearchingDestination &&
+                    destinationResults.length > 0 && (
+                      <div className="absolute z-[1000] w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
+                        {destinationResults.map((suggestion, index) => (
+                          <div
+                            key={`dest-${index}`}
+                            className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors duration-150 flex items-start"
+                            onClick={() =>
+                              handleSelectedDestination(suggestion)
+                            }
+                          >
+                            <div className="mr-3 mt-0.5">
+                              <MapPin
+                                size={16}
+                                className="text-red-500 flex-shrink-0"
+                              />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {suggestion.place_name.split(",")[0]}
+                              </p>
+                              <p className="text-xs text-gray-500 truncate">
+                                {suggestion.place_name
+                                  .split(",")
+                                  .slice(1)
+                                  .join(",")
+                                  .trim()}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                              {suggestion.place_name.split(",")[0]}
-                            </p>
-                            <p className="text-xs text-gray-500 truncate">
-                              {suggestion.place_name
-                                .split(",")
-                                .slice(1)
-                                .join(",")
-                                .trim()}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    )}
+
+                  {showDestinationSuggestions &&
+                    !isSearchingDestination &&
+                    debouncedDestination.length > 2 &&
+                    destinationResults.length === 0 && (
+                      <div className="absolute z-[1000] w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
+                        <p className="text-sm text-gray-600 text-center">
+                          No results found
+                        </p>
+                      </div>
+                    )}
                 </div>
               </div>
             </div>
           </div>
+
+          {/* search button*/}
           <button
             className=" mt-5 w-full p-2 border-stone-50 bg-gray-400 rounded-2xl focus:border-red-300 focus:outline-none"
             onClick={handleSubmit}
@@ -347,7 +371,6 @@ const handleSelectedDestination = (location: LocationResult) => {
                 </div>
               </div>
 
-              {/* Route steps */}
               <div className="p-4">
                 {route.steps.map((step, idx) => (
                   <div key={idx} className="mb-3 last:mb-0">
