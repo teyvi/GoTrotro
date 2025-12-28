@@ -9,22 +9,22 @@ import {
   RouteStep,
   RouteOption,
 } from "../types/mapTypes";
-import { searchLocations } from "../services/GeocoderService";
-import { appConfiguration } from "../configuration/config";
+ import { appConfiguration } from "../configuration/config";
 import { useDebounce } from "../hooks/useDebounce"
+import { useLocationSearch} from "../queries/searchLocations"
 
 const SingleRoutes = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const query = searchParams.get("q") || "";
-
+ 
   //location input states
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
 
-//selected location states
-  const [originResults, setOriginResults] = useState<LocationResult[]>([]);
-  const [destinationResults, setDestinationResults] = useState<LocationResult[]>([]);
+ // Selected location states
+  const [selectedOrigin, setSelectedOrigin] = useState<LocationResult | null>(null);
+  const [selectedDestination, setSelectedDestination] = useState<LocationResult | null>(null);
+  
 
   // UI states
   const [showOriginSuggestions, setShowOriginSuggestions] = useState(false);
@@ -34,7 +34,14 @@ const SingleRoutes = () => {
   // Debounced search values
   const debouncedOrigin = useDebounce(origin, 500);
   const debouncedDestination = useDebounce(destination, 500);
-  
+
+//location search query
+const { 
+  data: originResults = [],
+  isLoading: isSearchingOrigin,
+} = useLocationSearch (debouncedOrigin, showOriginSuggestions);
+
+
 
 const handleOriginInputChange = (e:React.ChangeEvent<HTMLInputElement> ) => {
 setOrigin(e.target.value);
