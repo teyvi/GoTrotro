@@ -180,9 +180,7 @@ const handleSelectedDestination = (location: LocationResult) => {
 
   const handleRouteSelect = (routeId: string) => {
     navigate(
-      `/route/${routeId}?origin=${encodeURIComponent(
-        origin
-      )}&destination=${encodeURIComponent(destination)}`
+      `/route/${routeId}?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`
     );
   };
   return (
