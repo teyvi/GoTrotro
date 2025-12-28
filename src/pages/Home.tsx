@@ -64,18 +64,18 @@ const {
     setSelectedDestination(null);
   };
 
-  const handleSelectSuggestion = (
-    location: LocationResult,
-    isOrigin: boolean
-  ) => {
-    if (isOrigin) {
-      setOrigin(location.place_name);
-      setOriginSuggestions([]);
-    } else {
-      setDestination(location.place_name);
-      setDestinationSuggestions([]);
-    }
-  };
+
+  const handleSelectOrigin = ( location : LocationResult) => {
+    setOrigin(location.place_name);
+    setSelectedOrigin(location);
+    setShowOriginSuggestions(false);
+}
+
+const handleSelectedDestination = (location: LocationResult) => {
+  setDestination(location.place_name);
+  setSelectedDestination(location);
+  setShowDestinationSuggestions(false);
+}
 
   const routingEngine =
     appConfiguration.routingEngines[appConfiguration.defaultRoutingEngine];
@@ -111,21 +111,13 @@ const {
     }
   };
 
-  const handleSubmit = () => {
-    if (
-      !origin ||
-      !destination ||
-      !originResults.length ||
-      !destinationResults.length ||
-      !originResults[0] ||
-      !destinationResults[0]
-    ) {
-      alert("Enter valid origin and destination");
+   const handleSubmit = () => {
+    if (!selectedOrigin || !selectedDestination) {
+      alert("Please select valid origin and destination from the suggestions");
       return;
     }
-    routes();
+    fetchRoutes();
   };
-
 
 
   const transformRoutingResponse = (itineraries: any[]): RouteOption[] => {
