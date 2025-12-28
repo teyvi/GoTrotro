@@ -107,25 +107,7 @@ const handleDestinationInputChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     routes();
   };
 
-  useEffect(() => {
-    const fetchCoordinates = async () => {
-      if (query) {
-        setIsSearchingDestination(true);
-        try {
-          const results = await searchLocations(query);
-          if (results.length > 0) {
-            setDestinationResults(results);
-          }
-        } catch (error) {
-          console.error("Failed to fetch destination coordinates:", error);
-        } finally {
-          setIsSearchingDestination(false);
-        }
-      }
-    };
 
-    fetchCoordinates();
-  }, [query]);
 
   const transformRoutingResponse = (itineraries: any[]): RouteOption[] => {
     if (!Array.isArray(itineraries)) {
