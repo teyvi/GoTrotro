@@ -2,7 +2,7 @@ import { LocationResult } from "../types/mapTypes";
 
 //user agent constants and request intervals
 const USER_AGENT =
-  process.env.REACT_APP_USER_AGENT || "https://github.com/teyvi";
+  process.env.REACT_APP_USER_AGENT || "me";
 const MIN_REQUEST_INTERVAL = 1000;
 let lastRequestTime = 0;
 

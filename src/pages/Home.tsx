@@ -17,23 +17,24 @@ const SingleRoutes = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const query = searchParams.get("q") || "";
+
+  //location input states
   const [origin, setOrigin] = useState("");
-  const [destination, setDestination] = useState(query);
+  const [destination, setDestination] = useState("");
+
+//selected location states
   const [originResults, setOriginResults] = useState<LocationResult[]>([]);
-  const [destinationResults, setDestinationResults] = useState<
-    LocationResult[]
-  >([]);
-  const [isSearchingOrigin, setIsSearchingOrigin] = useState(false);
-  const [isSearchingDestination, setIsSearchingDestination] = useState(false);
-  const [originSuggestions, setOriginSuggestions] = useState<LocationResult[]>(
-    []
-  );
-  const [destinationSuggestions, setDestinationSuggestions] = useState<
-    LocationResult[]
-  >([]);
+  const [destinationResults, setDestinationResults] = useState<LocationResult[]>([]);
+
+  // UI states
+  const [showOriginSuggestions, setShowOriginSuggestions] = useState(false);
+  const [showDestinationSuggestions, setShowDestinationSuggestions] = useState(false);
   const [routeOptions, setRouteOptions] = useState<RouteOption[]>([]);
-  const debouncedOrigin = useDebounce(origin)
-  const debounceDestination = useDebounce(destination)
+
+  // Debounced search values
+  const debouncedOrigin = useDebounce(origin, 500);
+  const debouncedDestination = useDebounce(destination, 500);
+  
 
 const handleOriginInputChange = (e:React.ChangeEvent<HTMLInputElement> ) => {
 setOrigin(e.target.value);
