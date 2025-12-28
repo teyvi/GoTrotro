@@ -35,11 +35,18 @@ const SingleRoutes = () => {
   const debouncedOrigin = useDebounce(origin, 500);
   const debouncedDestination = useDebounce(destination, 500);
 
-//location search query
+
+//origin location search query
 const { 
   data: originResults = [],
   isLoading: isSearchingOrigin,
 } = useLocationSearch (debouncedOrigin, showOriginSuggestions);
+
+//destination location search query
+const { 
+  data: destinationResults = [],
+  isLoading: isSearchingDestination,
+} = useLocationSearch ( debouncedDestination, showDestinationSuggestions)
 
 
 
