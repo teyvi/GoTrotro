@@ -50,15 +50,19 @@ const {
 
 
 
-const handleOriginInputChange = (e:React.ChangeEvent<HTMLInputElement> ) => {
-setOrigin(e.target.value);
-setOriginSuggestions([])
-}
+  const handleOriginInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setOrigin(value);
+    setShowOriginSuggestions(true);
+    setSelectedOrigin(null);
+  };
 
-const handleDestinationInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  setDestination(e.target.value);
-  setDestinationSuggestions([]);
-};
+  const handleDestinationInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setDestination(value);
+    setShowDestinationSuggestions(true);
+    setSelectedDestination(null);
+  };
 
   const handleSelectSuggestion = (
     location: LocationResult,
