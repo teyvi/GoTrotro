@@ -1,9 +1,10 @@
+import React from "react";
 import { BrowserRouter, Route, Routes as RouterRoutes } from "react-router-dom";
 import "./App.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import SingleRoutes from "./pages/Home";
-import RouteDetails from "./pages/RouteDetails";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import MapComponent from "./components/MapComponent";
 
 const queryClient = new QueryClient();
 
@@ -13,12 +14,10 @@ function App() {
       <BrowserRouter>
         <RouterRoutes>
           <Route path="/" element={<SingleRoutes />} />
-          <Route path="/route/:id" element={<RouteDetails />} />
+          <Route path="/route/:id" element={<MapComponent />} />
         </RouterRoutes>
       </BrowserRouter>
-      {process.env.NODE_ENV !== "production" && (
         <ReactQueryDevtools initialIsOpen={false} />
-      )}
     </QueryClientProvider>
   );
 }

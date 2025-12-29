@@ -13,7 +13,7 @@ export interface RouteData {
   properties: {};
   geometry: {
     type: "LineString";
-    coordinates: [[number, number]];
+    coordinates: [number, number][];
   };
 }
 

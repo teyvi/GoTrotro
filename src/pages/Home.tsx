@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Clock, ArrowRight } from "lucide-react";
+import {  MapPin, Clock, ArrowRight } from "lucide-react";
 import { Button } from "../assets/Button";
 import { cn } from "../lib/utils";
 import {
@@ -30,9 +30,10 @@ const SingleRoutes = () => {
 
   // UI states
   const [showOriginSuggestions, setShowOriginSuggestions] = useState(false);
-  const [showDestinationSuggestions, setShowDestinationSuggestions] =
-    useState(false);
+  const [showDestinationSuggestions, setShowDestinationSuggestions] = useState(false);
   const [routeOptions, setRouteOptions] = useState<RouteOption[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [isLoadingRoutes, setIsLoadingRoutes] = useState(false);
 
   // Debounced search values
   const debouncedOrigin = useDebounce(origin, 500);
@@ -40,11 +41,11 @@ const SingleRoutes = () => {
 
   //origin location search query
   const { data: originResults = [], isLoading: isSearchingOrigin } =
-    useLocationSearch(debouncedOrigin, showOriginSuggestions);
+    useLocationSearch(debouncedOrigin, showOriginSuggestions && debouncedOrigin.length > 2);
 
   //destination location search query
   const { data: destinationResults = [], isLoading: isSearchingDestination } =
-    useLocationSearch(debouncedDestination, showDestinationSuggestions);
+    useLocationSearch(debouncedDestination, showDestinationSuggestions && debouncedDestination.length > 2);
 
   const handleOriginInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -84,6 +85,10 @@ const SingleRoutes = () => {
         return;
       }
 
+      setIsLoadingRoutes(true);
+      setRouteOptions([]);
+      setHasSearched(false);
+
       const routingResponse = await routingEngine.getRoute({
         origin: {
           latitude: selectedOrigin.coordinates[1],
@@ -100,9 +105,14 @@ const SingleRoutes = () => {
       const itineraries = routingResponse || [];
       const transformedRoutes = transformRoutingResponse(itineraries);
       setRouteOptions(transformedRoutes);
+      setHasSearched(true);
     } catch (error) {
       console.error("Error getting route:", error);
-      alert("Something went wrong while fetching your route.");
+      alert("The trip is not availble at the moment");
+      setRouteOptions([]);
+      setHasSearched(true);
+    } finally {
+      setIsLoadingRoutes(false);
     }
   };
 
@@ -172,10 +182,17 @@ const SingleRoutes = () => {
   };
 
   const handleRouteSelect = (routeId: string) => {
+    if (!selectedOrigin || !selectedDestination) {
+      return;
+    }
+    
+    const originCoords = `${selectedOrigin.coordinates[0]},${selectedOrigin.coordinates[1]}`;
+    const destCoords = `${selectedDestination.coordinates[0]},${selectedDestination.coordinates[1]}`;
+    
     navigate(
       `/route/${routeId}?origin=${encodeURIComponent(
         origin
-      )}&destination=${encodeURIComponent(destination)}`
+      )}&destination=${encodeURIComponent(destination)}&originCoords=${originCoords}&destCoords=${destCoords}`
     );
   };
   return (
@@ -336,26 +353,34 @@ const SingleRoutes = () => {
 
           {/* search button*/}
           <button
-            className=" mt-5 w-full p-2 border-stone-50 bg-gray-400 rounded-2xl focus:border-red-300 focus:outline-none"
+            className=" mt-5 w-full p-2 border-stone-50 bg-gray-400 rounded-2xl focus:border-red-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleSubmit}
+            disabled={isLoadingRoutes}
           >
-            Search
+            {isLoadingRoutes ? "Searching..." : "Search"}
           </button>
         </div>
       </div>
 
       <div className="container mx-auto max-w-lg p-4 relative z-10">
-        <h2 className="text-xl font-bold mb-6 flex items-center">
+        {isLoadingRoutes ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mb-4"></div>
+            <p className="text-gray-600">Finding routes...</p>
+          </div>
+        ) : !hasSearched ? null : routeOptions.length === 0 ? ( 
+          <>
+          <h2 className="text-xl font-bold mb-6 flex items-center">
           <span className="bg-red-100 text-red-500 p-1 rounded-md mr-2">
             <Clock size={18} />
           </span>
           Route Options
         </h2>
-
-        {routeOptions.length === 0 ? (
           <div className="text-gray-500 text-center">
             No routes found. Try searching!
           </div>
+          </>
+          
         ) : (
           routeOptions.map((route, index) => (
             <div
