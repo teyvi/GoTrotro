@@ -29,9 +29,14 @@ import {
   Itinerary,
 } from "../types/mapTypes";
 import { decodePolyline } from "../utils/polylineDecoder";
-import debounce from "lodash.debounce";
+import { transformOTPItinerary } from "../utils/otpTransformer";
+import { DisplayItinerary } from "../types/routeDisplay";
 
-function MapComponent() {
+interface MapComponentProps {
+  onItineraryChange?: (itinerary: DisplayItinerary | null) => void;
+}
+
+function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
   const [searchParams] = useSearchParams();
   const mapRef = useRef<MapRef>(null);
   const [originMarker, setOriginMarker] = useState<Location | null>(null);
@@ -39,8 +44,6 @@ function MapComponent() {
     null
   );
   const [routeData, setRouteData] = useState<RouteData | null>(null);
-  const [routeDistance, setRouteDistance] = useState<string | null>(null);
-  const [routeDuration, setRouteDuration] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [origin, setOrigin] = useState<LocationResult | null>(null);
   const [destination, setDestination] = useState<LocationResult | null>(null);
@@ -149,33 +152,6 @@ function MapComponent() {
     return allCoordinates;
   };
 
-  /**
-   * Calculates total distance from itinerary legs
-   */
-  const calculateTotalDistance = (itinerary: Itinerary | null): number => {
-    if (!itinerary) {
-      return 0;
-    }
-
-    let totalDistance = 0;
-
-    if (itinerary.legs && Array.isArray(itinerary.legs)) {
-      for (const leg of itinerary.legs) {
-        // distance exists on OTP API response structure but not in type definition
-        const legDistance = (leg as any).distance;
-        if (legDistance && typeof legDistance === 'number') {
-          totalDistance += legDistance;
-        }
-      }
-    }
-
-    // Fallback to itinerary distance if available
-    if (totalDistance === 0 && itinerary.distance) {
-      totalDistance = itinerary.distance;
-    }
-
-    return totalDistance;
-  };
 
   const calculateRoute = useCallback(async () => {
     if (!originMarker || !destinationMarker) return;
@@ -203,6 +179,12 @@ function MapComponent() {
 
         if (!itinerary) {
           throw new Error("Invalid itinerary data");
+        }
+
+        // Transform itinerary for RouteInstructions component and notify parent
+        const transformedRoute = transformOTPItinerary(itinerary);
+        if (onItineraryChange) {
+          onItineraryChange(transformedRoute);
         }
 
         // Extract and decode geometry from legs
@@ -242,31 +224,19 @@ function MapComponent() {
             coordinates: cleanedCoordinates,
           },
         });
-
-        // Calculate total distance from legs
-        const totalDistanceMeters = calculateTotalDistance(itinerary);
-        const distanceInKm = (totalDistanceMeters / 1000).toFixed(1);
-        setRouteDistance(distanceInKm);
-
-        // Calculate duration
-        const durationInMinutes = Math.round(itinerary.duration / 60);
-        const hours = Math.floor(durationInMinutes / 60);
-        const minutes = durationInMinutes % 60;
-
-        setRouteDuration(
-          hours > 0 ? `${hours} hr ${minutes} min` : `${minutes} min`
-        );
-
       }
     } catch (error) {
       routeCalculatedRef.current = ""; // Reset on error so it can retry
       setRouteData(null);
-      setRouteDistance(null);
-      setRouteDuration(null);
+      
+      // Notify parent component of error
+      if (onItineraryChange) {
+        onItineraryChange(null);
+      }
     } finally {
       setLoading(false);
     }
-  }, [originMarker, destinationMarker, routingEngineInstance]);
+  }, [originMarker, destinationMarker, routingEngineInstance, onItineraryChange]);
 
   const flyToLocation = useCallback((longitude: number, latitude: number) => {
     if (mapRef.current) {
@@ -350,7 +320,7 @@ function MapComponent() {
   }, [originMarker, destinationMarker, fitMapToMarkers, calculateRoute, flyToLocation]);
 
   return (
-    <>
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <Map
         ref={mapRef}
         initialViewState={{
@@ -361,7 +331,7 @@ function MapComponent() {
         style={{
           position: "absolute",
           width: "100%",
-          height: "calc(100vh)",
+          height: "100%",
         }}
         mapStyle={`https://api.maptiler.com/maps/streets/style.json?key=${process.env.REACT_APP_MAPTILER_TOKEN}`}
       >
@@ -415,20 +385,6 @@ function MapComponent() {
         )}
       </Map>
 
-      {routeData && (
-        <div className="absolute bottom-4 left-4 bg-white p-4 rounded-lg shadow-lg max-w-xs z-10">
-          <h3 className="font-bold text-lg mb-2">Route Information</h3>
-          <div className="text-sm">
-            <p className="mb-1">
-              <span className="font-medium">Distance:</span> {routeDistance} km
-            </p>
-            <p>
-              <span className="font-medium">Duration:</span> {routeDuration}
-            </p>
-          </div>
-        </div>
-      )}
-
       {loading && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-70 p-4 rounded-lg shadow-lg z-10">
           <div className="flex items-center">
@@ -456,7 +412,7 @@ function MapComponent() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
 

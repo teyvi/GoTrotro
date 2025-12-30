@@ -1,9 +1,9 @@
-export function decodePolyline(encoded: string, precision: number = 1e5): number[][] {
+export function decodePolyline(encoded: string, precision: number = 1e5): [number, number][] {
   if (!encoded || encoded.length === 0) {
     return [];
   }
 
-  const coordinates: number[][] = [];
+  const coordinates: [number, number][] = [];
   let index = 0;
   let lat = 0;
   let lng = 0;
@@ -50,7 +50,7 @@ export function decodePolyline(encoded: string, precision: number = 1e5): number
       lng += deltaLng;
 
       // Return as [lng, lat] for GeoJSON format
-      coordinates.push([lng / precision, lat / precision]);
+      coordinates.push([lng / precision, lat / precision] as [number, number]);
     }
   } catch (error) {
     throw error;

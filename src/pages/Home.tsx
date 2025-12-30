@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {  MapPin, Clock, ArrowRight } from "lucide-react";
 import { Button } from "../assets/Button";
 import { cn } from "../lib/utils";
@@ -14,7 +14,6 @@ import { useDebounce } from "../hooks/useDebounce";
 import { useLocationSearch } from "../queries/searchLocations";
 
 const SingleRoutes = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   //location input states
