@@ -140,7 +140,7 @@ const TransportationModeMap: Record<number, string> = {
     return step;
   }
 private parseLeg(jsonLeg: any, geometry: Array<any>): Leg {
-  return {
+  const leg: any = {
     mode: jsonLeg.mode, // keep as string for UI checks like leg.mode === "WALK"
     name: jsonLeg.route,
      routeLongName: jsonLeg.routeLongName,
@@ -152,6 +152,18 @@ private parseLeg(jsonLeg: any, geometry: Array<any>): Leg {
       ? jsonLeg.steps.map((jsonStep: any) => this.parseStep(jsonStep, geometry))
       : [],
   };
+
+  // Preserve legGeometry from raw API response for polyline decoding
+  if (jsonLeg.legGeometry) {
+    leg.legGeometry = jsonLeg.legGeometry;
+  }
+
+  // Preserve distance from raw API response
+  if (jsonLeg.distance !== undefined) {
+    leg.distance = jsonLeg.distance;
+  }
+
+  return leg as Leg;
 }
 
 private parseItinerary(jsonItinerary: any): Itinerary {

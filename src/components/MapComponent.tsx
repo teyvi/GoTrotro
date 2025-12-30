@@ -13,7 +13,6 @@ import {
   Source,
   Layer,
   MapRef,
-  LayerProps,
 } from "react-map-gl/maplibre";
 import { useSearchParams } from "react-router-dom";
 
@@ -101,30 +100,48 @@ function MapComponent() {
     const allCoordinates: number[][] = [];
 
     // Check if geometry is directly on itinerary (already decoded)
+    // Only use this if it has valid coordinates
     if (itinerary.geometry && Array.isArray(itinerary.geometry) && itinerary.geometry.length > 0) {
-      // Check if it's already in the correct format
-      if (Array.isArray(itinerary.geometry[0])) {
+      // Check if it's already in the correct format and has valid data
+      if (Array.isArray(itinerary.geometry[0]) && itinerary.geometry.length > 2) {
         return itinerary.geometry as number[][];
       }
     }
 
     // Try to extract from legs (for OTP API responses)
     if (itinerary.legs && Array.isArray(itinerary.legs)) {
-      for (const leg of itinerary.legs) {
+      for (let i = 0; i < itinerary.legs.length; i++) {
+        const leg = itinerary.legs[i];
         // legGeometry exists on OTP API response structure but not in type definition
         const legGeometry = (leg as any).legGeometry;
         
         if (legGeometry?.points) {
           // Decode encoded polyline string
           try {
-            const decodedCoords = decodePolyline(legGeometry.points);
-            allCoordinates.push(...decodedCoords);
+            const encodedPolyline = legGeometry.points;
+            const decodedCoords = decodePolyline(encodedPolyline);
+            if (decodedCoords.length > 0) {
+              allCoordinates.push(...decodedCoords);
+            }
           } catch (error) {
-            console.warn("Failed to decode polyline from leg:", error);
+            // Try fallback: use leg start/end points
+            const legAny = leg as any;
+            if (legAny.from?.lat !== undefined && legAny.from?.lon !== undefined && 
+                legAny.to?.lat !== undefined && legAny.to?.lon !== undefined) {
+              allCoordinates.push([legAny.from.lon, legAny.from.lat]);
+              allCoordinates.push([legAny.to.lon, legAny.to.lat]);
+            }
           }
         } else if (legGeometry?.coordinates && Array.isArray(legGeometry.coordinates)) {
           // Already decoded coordinates
           allCoordinates.push(...legGeometry.coordinates);
+        } else {
+          // Try to get coordinates from leg start/end points as fallback
+          const legAny = leg as any;
+          if (legAny.from?.lat && legAny.from?.lon && legAny.to?.lat && legAny.to?.lon) {
+            allCoordinates.push([legAny.from.lon, legAny.from.lat]);
+            allCoordinates.push([legAny.to.lon, legAny.to.lat]);
+          }
         }
       }
     }
@@ -178,10 +195,11 @@ function MapComponent() {
         modes: [TransportationMode.TRANSIT, TransportationMode.WALK],
         wheelchair: false,
       };
+      
       const routes = await routingEngineInstance.getRoute(routingRequest);
 
       if (routes.length > 0) {
-        const itinerary = routes[0]; // TODO: Remove when GUI for choosing the itinerary exists
+        const itinerary = routes[0];
 
         if (!itinerary) {
           throw new Error("Invalid itinerary data");
@@ -194,12 +212,34 @@ function MapComponent() {
           throw new Error("No geometry data found in route");
         }
 
+        // Ensure coordinates are properly formatted and remove any duplicates at leg boundaries
+        const cleanedCoordinates: [number, number][] = [];
+        
+        for (let i = 0; i < coordinates.length; i++) {
+          const coord = coordinates[i];
+          // Ensure coordinate is valid [lng, lat] pair
+          if (Array.isArray(coord) && coord.length >= 2 && 
+              typeof coord[0] === 'number' && typeof coord[1] === 'number' &&
+              !isNaN(coord[0]) && !isNaN(coord[1])) {
+            // Skip duplicate consecutive coordinates (at leg boundaries)
+            if (cleanedCoordinates.length === 0 || 
+                cleanedCoordinates[cleanedCoordinates.length - 1][0] !== coord[0] ||
+                cleanedCoordinates[cleanedCoordinates.length - 1][1] !== coord[1]) {
+              cleanedCoordinates.push([coord[0], coord[1]]);
+            }
+          }
+        }
+
+        if (cleanedCoordinates.length === 0) {
+          throw new Error("No valid coordinates found in route");
+        }
+
         setRouteData({
           type: "Feature",
           properties: {},
           geometry: {
             type: "LineString",
-            coordinates: coordinates as [number, number][],
+            coordinates: cleanedCoordinates,
           },
         });
 
@@ -216,9 +256,9 @@ function MapComponent() {
         setRouteDuration(
           hours > 0 ? `${hours} hr ${minutes} min` : `${minutes} min`
         );
+
       }
     } catch (error) {
-      console.error("Error calculating route:", error);
       routeCalculatedRef.current = ""; // Reset on error so it can retry
       setRouteData(null);
       setRouteDistance(null);
@@ -258,6 +298,7 @@ function MapComponent() {
     },
     []
   );
+
 
   // Effect 1: Set markers when origin/destination change
   useEffect(() => {
@@ -306,32 +347,15 @@ function MapComponent() {
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [originMarker, destinationMarker]);
-
-  const routeLayerStyle: LayerProps = useMemo(
-    () => ({
-      id: "route",
-      type: "line",
-      layout: {
-        "line-join": "round",
-        "line-cap": "round",
-      },
-      paint: {
-        "line-color": "#4285F4",
-        "line-width": 4,
-        "line-opacity": 0.8,
-      },
-    }),
-    []
-  );
+  }, [originMarker, destinationMarker, fitMapToMarkers, calculateRoute, flyToLocation]);
 
   return (
     <>
       <Map
         ref={mapRef}
         initialViewState={{
-          longitude: -0.205874,
-          latitude: 5.614818,
+          longitude: -0.20119,
+          latitude: 5.55619,
           zoom: 11,
         }}
         style={{
@@ -345,7 +369,8 @@ function MapComponent() {
         <GeolocateControl
           position="bottom-right"
           positionOptions={{ enableHighAccuracy: true }}
-          trackUserLocation={true}
+          trackUserLocation={false}
+          showAccuracyCircle={true}
         />
 
         {originMarker && (
@@ -366,9 +391,26 @@ function MapComponent() {
           />
         )}
 
-        {routeData && (
-          <Source id="route-source" type="geojson" data={routeData}>
-            <Layer {...routeLayerStyle} />
+        {routeData && routeData.geometry.coordinates.length > 0 && (
+          <Source 
+            id="route-source" 
+            type="geojson" 
+            data={routeData}
+          >
+            <Layer 
+              id="route"
+              type="line"
+              layout={{
+                "line-join": "round",
+                "line-cap": "round",
+                visibility: "visible"
+              }}
+              paint={{
+                "line-color": "#FF0000",
+                "line-width": 8,
+                "line-opacity": 1.0,
+              }}
+            />
           </Source>
         )}
       </Map>
