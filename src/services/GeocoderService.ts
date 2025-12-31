@@ -27,7 +27,10 @@ export async function searchLocations(
     format: "json",
     addressdetails: "1",
     countrycodes: "gh",
-    limit: "10",
+    limit: "15", // Increased from 10 to 15 suggestions
+    dedupe: "1", // Remove duplicate results
+    "accept-language": "en", // Prefer English results
+    extratags: "1", // Get additional tags for better filtering
   });
   const url = `https://nominatim.openstreetmap.org/search?${params.toString()}`;
   try {
@@ -45,12 +48,36 @@ export async function searchLocations(
 
     const data = await response.json();
 
+    // Filter out less relevant results (optional - can be adjusted)
+    const filtered = data.filter((item: any) => {
+      // Keep all results but you can add filters here
+      // Example: return item.importance > 0.1;
+      return true;
+    });
+
     // Transform Nominatim response to our format
-    return data.map((item: any) => ({
+    const results = filtered.map((item: any) => ({
       place_name: item.display_name,
       coordinates: [parseFloat(item.lon), parseFloat(item.lat)],
-      properties: item,
+      center: [parseFloat(item.lon), parseFloat(item.lat)],
+      latitude: parseFloat(item.lat),
+      longitude: parseFloat(item.lon),
+      id: `${item.osm_type}-${item.osm_id}`,
+      properties: {
+        ...item,
+        // Add useful properties for better display
+        place_type: item.type,
+        place_class: item.class,
+        importance: item.importance,
+        osm_type: item.osm_type,
+        osm_id: item.osm_id,
+      },
     }));
+
+    // Sort by importance (higher importance first)
+    return results.sort((a: any, b: any) => 
+      (b.properties.importance || 0) - (a.properties.importance || 0)
+    );
   } catch (error) {
     console.error("Error searching locations:", error);
     throw error; // Re-throw so TanStack Query can handle retries
