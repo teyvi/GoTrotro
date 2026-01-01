@@ -1,85 +1,76 @@
-import { LocationResult } from "../types/mapTypes";
+import { LocationResult, GeocoderSearchOptions } from "../types/mapTypes";
+import { appConfiguration } from "../configuration/config";
 
-//user agent constants and request intervals
-const CONTACT_EMAIL =
-  process.env.REACT_APP_NOMINATIM_EMAIL || "angelateyvi@gmail.com";
-const USER_AGENT = `GoTrotro (${CONTACT_EMAIL})`;
-const MIN_REQUEST_INTERVAL = 1500;
-let lastRequestTime = 0;
-
+/**
+ * Search for locations using the configured geocoder adapter
+ * @param query - The search query string
+ * @param options - Optional geocoder search options
+ * @returns Promise with array of location results
+ */
 export async function searchLocations(
-  query: string
+  query: string,
+  options?: GeocoderSearchOptions
 ): Promise<LocationResult[]> {
   if (!query.trim()) return [];
 
-  //Calculate time inbetween request and response
-  const now = Date.now();
-  const targetTime = Math.max(lastRequestTime + MIN_REQUEST_INTERVAL, now);
-  lastRequestTime = targetTime;
+  // Get the configured geocoder adapter
+  const geocoder = appConfiguration.geocoders[appConfiguration.defaultGeocoder];
 
-  const waitTime = targetTime - now;
-  if (waitTime > 0) {
-    await new Promise((resolve) => setTimeout(resolve, waitTime));
-  }
-  //url query params
-  const params = new URLSearchParams({
-    q: query,
-    format: "json",
-    addressdetails: "1",
-    countrycodes: "gh",
-    limit: "15", // Increased from 10 to 15 suggestions
-    dedupe: "1", // Remove duplicate results
-    "accept-language": "en", // Prefer English results
-    extratags: "1", // Get additional tags for better filtering
-  });
-  const url = `https://nominatim.openstreetmap.org/search?${params.toString()}`;
-  try {
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": USER_AGENT,
-        Accept: "application/json",
-      },
-    });
-    if (!response.ok) {
-      throw new Error(
-        `Nominatim API error: ${response.status} ${response.statusText}`
-      );
-    }
-
-    const data = await response.json();
-
-    // Filter out less relevant results (optional - can be adjusted)
-    const filtered = data.filter((item: any) => {
-      // Keep all results but you can add filters here
-      // Example: return item.importance > 0.1;
-      return true;
-    });
-
-    // Transform Nominatim response to our format
-    const results = filtered.map((item: any) => ({
-      place_name: item.display_name,
-      coordinates: [parseFloat(item.lon), parseFloat(item.lat)],
-      center: [parseFloat(item.lon), parseFloat(item.lat)],
-      latitude: parseFloat(item.lat),
-      longitude: parseFloat(item.lon),
-      id: `${item.osm_type}-${item.osm_id}`,
-      properties: {
-        ...item,
-        // Add useful properties for better display
-        place_type: item.type,
-        place_class: item.class,
-        importance: item.importance,
-        osm_type: item.osm_type,
-        osm_id: item.osm_id,
-      },
-    }));
-
-    // Sort by importance (higher importance first)
-    return results.sort((a: any, b: any) => 
-      (b.properties.importance || 0) - (a.properties.importance || 0)
+  if (!geocoder) {
+    throw new Error(
+      `Geocoder "${appConfiguration.defaultGeocoder}" is not configured. Available geocoders: ${Object.keys(appConfiguration.geocoders).join(", ")}`
     );
+  }
+
+  try {
+    // Use default options if not provided
+    const searchOptions: GeocoderSearchOptions = {
+      limit: 15,
+      countryCode: "gh", // Ghana - can be made configurable
+      language: "en",
+      ...options,
+    };
+
+    return await geocoder.search(query, searchOptions);
   } catch (error) {
     console.error("Error searching locations:", error);
     throw error; // Re-throw so TanStack Query can handle retries
+  }
+}
+
+/**
+ * Search for locations using a specific geocoder
+ * @param geocoderName - The name of the geocoder to use (e.g., "nominatim", "photon")
+ * @param query - The search query string
+ * @param options - Optional geocoder search options
+ * @returns Promise with array of location results
+ */
+export async function searchLocationsWithGeocoder(
+  geocoderName: string,
+  query: string,
+  options?: GeocoderSearchOptions
+): Promise<LocationResult[]> {
+  if (!query.trim()) return [];
+
+  const geocoder = appConfiguration.geocoders[geocoderName];
+
+  if (!geocoder) {
+    throw new Error(
+      `Geocoder "${geocoderName}" is not configured. Available geocoders: ${Object.keys(appConfiguration.geocoders).join(", ")}`
+    );
+  }
+
+  try {
+    const searchOptions: GeocoderSearchOptions = {
+      limit: 15,
+      countryCode: "gh",
+      language: "en",
+      ...options,
+    };
+
+    return await geocoder.search(query, searchOptions);
+  } catch (error) {
+    console.error(`Error searching locations with ${geocoderName}:`, error);
+    throw error;
   }
 }

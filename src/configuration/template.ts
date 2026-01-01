@@ -1,12 +1,17 @@
-import { RoutingAdapter } from "../types/mapTypes"
+import { RoutingAdapter, GeocoderAdapter } from "../types/mapTypes"
 
 export type AppConfiguration = {
+  appName: string,
+
   defaultRoutingEngine: string,
   routingEngines: {
     [key: string]: RoutingAdapter,
   }
 
-  appName: string,
+  defaultGeocoder: string,
+  geocoders: {
+    [key: string]: GeocoderAdapter,
+  }
 
   defaultMapStyle: string,
   mapStyles: {

@@ -68,6 +68,18 @@ export type LocationContextType = {
   swapLocations: () => void;
 };
 
+// Geocoder Adapter interface for pluggable geocoding services
+export interface GeocoderAdapter {
+  search: (query: string, options?: GeocoderSearchOptions) => Promise<LocationResult[]>;
+}
+
+export type GeocoderSearchOptions = {
+  limit?: number;
+  countryCode?: string;
+  language?: string;
+  bbox?: [number, number, number, number]; // [minLon, minLat, maxLon, maxLat]
+};
+
 export enum TransportationMode {
   BICYCLE,
   WALK,
