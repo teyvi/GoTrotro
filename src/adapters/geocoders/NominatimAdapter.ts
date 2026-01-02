@@ -29,7 +29,7 @@ export class NominatimAdapter implements GeocoderAdapter {
     this.settings = {
       userAgent: settings?.userAgent || "GoTrotro",
       email: settings?.email || "contact@gotrotro.example",
-      minRequestInterval: settings?.minRequestInterval || 1500, // Nominatim requires 1 request per second max
+      minRequestInterval: settings?.minRequestInterval || 1000, // Nominatim requires 1 request per second max
     };
   }
 
