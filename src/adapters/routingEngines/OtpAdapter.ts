@@ -51,6 +51,8 @@ const TransportationModeMap: Record<number, string> = {
       arriveBy: "false",
       wheelchair: String(options.wheelchair),
       locale: "en", //TODO: Make aware of multiple languages
+      // Request full geometry detail for all legs (may not be supported by all OTP versions)
+      showIntermediateStops: "true",
     });
 
     console.log(`${this.otpEndpointURL}?${params.toString()}`);

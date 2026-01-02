@@ -120,6 +120,7 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
         
         if (legGeometry?.points) {
           // Decode encoded polyline string
+          const legAny = leg as any;
           try {
             const encodedPolyline = legGeometry.points;
             const decodedCoords = decodePolyline(encodedPolyline);
@@ -127,9 +128,16 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
               allCoordinates.push(...decodedCoords);
             }
           } catch (error) {
-            // Try fallback: use leg start/end points
+            // Try fallback: use walk steps for WALK mode, or leg start/end points
             const legAny = leg as any;
-            if (legAny.from?.lat !== undefined && legAny.from?.lon !== undefined && 
+            if (legAny.mode === 'WALK' && legAny.steps && Array.isArray(legAny.steps) && legAny.steps.length > 0) {
+              // Use walk step coordinates for detailed path
+              for (const step of legAny.steps) {
+                if (step.lat !== undefined && step.lon !== undefined) {
+                  allCoordinates.push([step.lon, step.lat]);
+                }
+              }
+            } else if (legAny.from?.lat !== undefined && legAny.from?.lon !== undefined && 
                 legAny.to?.lat !== undefined && legAny.to?.lon !== undefined) {
               allCoordinates.push([legAny.from.lon, legAny.from.lat]);
               allCoordinates.push([legAny.to.lon, legAny.to.lat]);
@@ -139,9 +147,17 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
           // Already decoded coordinates
           allCoordinates.push(...legGeometry.coordinates);
         } else {
-          // Try to get coordinates from leg start/end points as fallback
+          // No encoded geometry - try to use walk steps for WALK mode, otherwise fall back to start/end
           const legAny = leg as any;
-          if (legAny.from?.lat && legAny.from?.lon && legAny.to?.lat && legAny.to?.lon) {
+          if (legAny.mode === 'WALK' && legAny.steps && Array.isArray(legAny.steps) && legAny.steps.length > 0) {
+            // Use walk step coordinates for detailed walking path
+            for (const step of legAny.steps) {
+              if (step.lat !== undefined && step.lon !== undefined) {
+                allCoordinates.push([step.lon, step.lat]);
+              }
+            }
+          } else if (legAny.from?.lat && legAny.from?.lon && legAny.to?.lat && legAny.to?.lon) {
+            // Fallback: straight line for transit or when no step data available
             allCoordinates.push([legAny.from.lon, legAny.from.lat]);
             allCoordinates.push([legAny.to.lon, legAny.to.lat]);
           }
@@ -362,26 +378,46 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
         )}
 
         {routeData && routeData.geometry.coordinates.length > 0 && (
-          <Source 
-            id="route-source" 
-            type="geojson" 
-            data={routeData}
-          >
-            <Layer 
-              id="route"
-              type="line"
-              layout={{
-                "line-join": "round",
-                "line-cap": "round",
-                visibility: "visible"
-              }}
-              paint={{
-                "line-color": "#FF0000",
-                "line-width": 8,
-                "line-opacity": 1.0,
-              }}
-            />
-          </Source>
+          <>
+            {/* Main route line */}
+            <Source 
+              id="route-source" 
+              type="geojson" 
+              data={routeData}
+            >
+              <Layer 
+                id="route"
+                type="line"
+                layout={{
+                  "line-join": "round",
+                  "line-cap": "round",
+                  visibility: "visible"
+                }}
+                paint={{
+                  "line-color": "#FF0000",
+                  "line-width": 6,
+                  "line-opacity": 0.8,
+                }}
+              />
+              {/* Route outline for better visibility */}
+              <Layer 
+                id="route-outline"
+                type="line"
+                layout={{
+                  "line-join": "round",
+                  "line-cap": "round",
+                  visibility: "visible"
+                }}
+                paint={{
+                  "line-color": "#FFFFFF",
+                  "line-width": 8,
+                  "line-opacity": 0.5,
+                  "line-gap-width": 0
+                }}
+                beforeId="route"
+              />
+            </Source>
+          </>
         )}
       </Map>
 
