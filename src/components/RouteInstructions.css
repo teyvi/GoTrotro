@@ -1,0 +1,259 @@
+.route-instructions {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  max-height: 600px;
+  overflow-y: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.route-summary {
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+}
+
+.route-summary h3 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.route-summary .transfers {
+  font-size: 18px;
+  color: #6b7280;
+}
+
+.route-summary .arrival-time {
+  margin: 4px 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.route-stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Legs List */
+.legs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Leg Card */
+.leg-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.leg-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+}
+
+.leg-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.leg-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #e5e7eb;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.leg-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.leg-title {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.leg-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* Route Badge */
+.route-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.route-badge {
+  padding: 4px 12px;
+  border-radius: 4px;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.route-name {
+  font-weight: 500;
+}
+
+/* Walk Steps */
+.walk-steps {
+  margin-left: 48px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.walk-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.step-icon {
+  font-size: 18px;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.step-content {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.step-instruction {
+  color: #374151;
+}
+
+.step-distance {
+  color: #9ca3af;
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+/* Transit Details */
+.transit-details {
+  margin-left: 48px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.stop-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+}
+
+.stop-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stop-name {
+  font-size: 14px;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.stop-time {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.transit-journey {
+  position: relative;
+  padding: 12px 0 12px 12px;
+  margin-left: 8px;
+}
+
+.journey-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, #3b82f6, #60a5fa);
+  border-radius: 2px;
+}
+
+.journey-info {
+  font-size: 13px;
+  color: #6b7280;
+  padding-left: 8px;
+}
+
+/* Walk Leg Specific */
+.walk-leg {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.walk-leg:hover {
+  border-color: #9ca3af;
+}
+
+/* Transit Leg Specific */
+.transit-leg {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.transit-leg:hover {
+  border-color: #3b82f6;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .route-instructions {
+    padding: 12px;
+  }
+  
+  .route-summary h3 {
+    font-size: 20px;
+  }
+  
+  .walk-steps,
+  .transit-details {
+    margin-left: 36px;
+  }
+  
+  .step-content {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .step-distance {
+    margin-left: 0;
+  }
+}

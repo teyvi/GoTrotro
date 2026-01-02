@@ -13,7 +13,7 @@ export interface RouteData {
   properties: {};
   geometry: {
     type: "LineString";
-    coordinates: [[number, number]];
+    coordinates: [number, number][];
   };
 }
 
@@ -66,6 +66,18 @@ export type LocationContextType = {
   setOrigin: (location: LocationResult | null) => void;
   setDestination: (location: LocationResult | null) => void;
   swapLocations: () => void;
+};
+
+// Geocoder Adapter interface for pluggable geocoding services
+export interface GeocoderAdapter {
+  search: (query: string, options?: GeocoderSearchOptions) => Promise<LocationResult[]>;
+}
+
+export type GeocoderSearchOptions = {
+  limit?: number;
+  countryCode?: string;
+  language?: string;
+  bbox?: [number, number, number, number]; // [minLon, minLat, maxLon, maxLat]
 };
 
 export enum TransportationMode {

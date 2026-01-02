@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import MaplibreGeocoder, { MaplibreGeocoderApiConfig, MaplibreGeocoderFeatureResults } from "@maplibre/maplibre-gl-geocoder";
+import { appConfiguration } from "../configuration/config";
 
 export function useGeocoder(
   geocoderRef: React.RefObject<HTMLDivElement | null>,
@@ -10,6 +11,14 @@ export function useGeocoder(
   useEffect(() => {
     if (!geocoderRef.current) return;
 
+    // Get the configured geocoder adapter
+    const geocoderAdapter = appConfiguration.geocoders[appConfiguration.defaultGeocoder];
+
+    if (!geocoderAdapter) {
+      console.error(`Geocoder "${appConfiguration.defaultGeocoder}" is not configured`);
+      return;
+    }
+
     const geocoderApi = {
       forwardGeocode: async (config: MaplibreGeocoderApiConfig): Promise<MaplibreGeocoderFeatureResults> => {
         const features: any[] = [];
@@ -18,26 +27,29 @@ export function useGeocoder(
             throw new Error("Query is required for forwardGeocode.");
           }
 
-          const request = `https://nominatim.openstreetmap.org/search?q=${config.query}&format=geojson&polygon_geojson=1&addressdetails=1`;
-          const response = await fetch(request);
-          const geojson = await response.json();
+          // Ensure query is a string
+          const queryString = typeof config.query === 'string' ? config.query : config.query.join(' ');
 
-          for (const feature of geojson.features) {
-            const center = [
-              feature.bbox[0] + (feature.bbox[2] - feature.bbox[0]) / 2,
-              feature.bbox[1] + (feature.bbox[3] - feature.bbox[1]) / 2,
-            ];
+          // Use the configured geocoder adapter
+          const results = await geocoderAdapter.search(queryString, {
+            limit: 15,
+            countryCode: "gh",
+            language: "en"
+          });
+
+          // Transform LocationResult to MapLibre GeoJSON format
+          for (const result of results) {
             const point = {
               type: "Feature",
               geometry: {
                 type: "Point",
-                coordinates: center,
+                coordinates: result.coordinates,
               },
-              place_name: feature.properties.display_name,
-              properties: feature.properties,
-              text: feature.properties.display_name,
+              place_name: result.place_name,
+              properties: result.properties,
+              text: result.place_name,
               place_type: ["place"],
-              center,
+              center: result.center,
             };
             features.push(point);
           }

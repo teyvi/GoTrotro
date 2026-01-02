@@ -37,15 +37,26 @@ export class OSRMAdapter implements RoutingAdapter {
 
   public async getRoute(options: RoutingRequest): Promise<Itinerary[]> {
     const response = await fetch(
-      `${this.osrmEndpointBaseUrl}/route/v1${(this.settings !== null ? "/" + this.settings.profile : "")}/${options.origin.longitude},${options.origin.latitude};${options.destination.longitude},${options.destination.latitude}?overview=full&geometries=geojson`
+      `${this.osrmEndpointBaseUrl}/route/v1${(this.settings !== null ? "/" + this.settings.profile : "")}/${options.origin.longitude},${options.origin.latitude};${options.destination.longitude},${options.destination.latitude}?overview=full&geometries=geojson&steps=true`
     );
 
+    if (!response.ok) {
+      throw new Error(`OSRM API error: ${response.status} ${response.statusText}`);
+    }
+
     const data = await response.json();
+    
+    if (data.code !== "Ok") {
+      throw new Error(data.message || "OSRM API error");
+    }
+
     const itineraries: Itinerary[] = [];
 
-    // for (const jsonItinerary of data.routes) {
-    //   itineraries.push(this.parseItinerary(jsonItinerary, options))
-    // }
+    if (data.routes && data.routes.length > 0) {
+      for (const jsonItinerary of data.routes) {
+        itineraries.push(this.parseItinerary(jsonItinerary, options))
+      }
+    }
 
     return itineraries;
   }
@@ -140,29 +151,35 @@ export class OSRMAdapter implements RoutingAdapter {
     return step;
   }
 
-  // private parseLeg(jsonLeg: any, options: RoutingRequest): Leg {
-  //   return {
-  //     name: jsonLeg.summary,
-  //     mode: options.modes[0],
-  //     steps: (jsonLeg.steps as Array<any>).map((jsonStep) => this.parseStep(jsonStep))
+  private parseLeg(jsonLeg: any, options: RoutingRequest): Leg {
+    const leg: any = {
+      name: jsonLeg.summary || "Route",
+      mode: options.modes && options.modes.length > 0 ? options.modes[0] : TransportationMode.CAR,
+      steps: (jsonLeg.steps as Array<any>).map((jsonStep) => this.parseStep(jsonStep)),
+      routeLongName: jsonLeg.summary || "",
+      routeId: "",
+      to: "",
+      from: "",
+      duration: jsonLeg.duration || 0,
+    }
+    return leg as Leg;
+  }
 
-  //   }
-  // }
+  private parseItinerary(jsonItinerary: any, options: RoutingRequest): Itinerary {
+    const startTime: Date = new Date();
+    const endTime: Date = new Date(startTime.getTime() + jsonItinerary.duration * 1000);
 
-  // private parseItinerary(jsonItinerary: any, options: RoutingRequest): Itinerary {
-  //   const startTime: Date = new Date();
-  //   const endTime: number = startTime.getSeconds() + jsonItinerary.duration;
-
-  //   return {
-  //     duration: jsonItinerary.duration,
-  //     startTime: new Date(),
-  //     endTime: new Date(endTime),
-  //     legs: (jsonItinerary.legs as Array<any>).map((jsonLeg) => this.parseLeg(jsonLeg, options)),
-  //     distance: jsonItinerary.distance,
-  //     geometry: jsonItinerary.geometry.coordinates,
-  //     plan: jsonItinerary.geometry.coordinates,
-  //   }
-  // }
+    const itinerary: any = {
+      duration: jsonItinerary.duration,
+      startTime: startTime,
+      endTime: endTime,
+      legs: (jsonItinerary.legs as Array<any>).map((jsonLeg) => this.parseLeg(jsonLeg, options)),
+      distance: jsonItinerary.distance,
+      geometry: jsonItinerary.geometry.coordinates,
+      plan: JSON.stringify(jsonItinerary.geometry.coordinates),
+    }
+    return itinerary as Itinerary;
+  }
 
 }
 
