@@ -1,4 +1,4 @@
-# Contributing to GoTrotro
+<!-- # Contributing to GoTrotro
 
 Thank you for your interest in contributing to GoTrotro! This guide will help you get started with contributing to the project.
 
@@ -530,4 +530,4 @@ Contributors are recognized in:
 - **Issues**: [GitHub Issues](https://github.com/yourusername/gotrotro/issues)
 
 Thank you for contributing to GoTrotro! 🚀
-
+ -->
