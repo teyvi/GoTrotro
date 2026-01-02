@@ -1,0 +1,172 @@
+.route-view-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Map Section */
+.map-section {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  transition: height 0.3s ease;
+}
+
+.map-section.full-width {
+  height: 100vh;
+}
+
+/* Instructions Section */
+.instructions-section {
+  position: relative;
+  width: 100%;
+  background: white;
+  border-top: 2px solid #e5e7eb;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+  max-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  transition: max-height 0.3s ease;
+  z-index: 1000;
+}
+
+.instructions-section.collapsed {
+  max-height: 48px;
+}
+
+/* Instructions Header */
+.instructions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.instructions-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.toggle-button {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-button:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.toggle-button:active {
+  transform: scale(0.98);
+}
+
+/* Instructions Content */
+.instructions-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Desktop View - Side by Side */
+@media (min-width: 1024px) {
+  .route-view-container {
+    flex-direction: row;
+  }
+
+  .map-section {
+    flex: 1;
+    height: 100vh;
+  }
+
+  .map-section.full-width {
+    width: 100%;
+  }
+
+  .instructions-section {
+    width: 450px;
+    max-height: 100vh;
+    border-top: none;
+    border-left: 2px solid #e5e7eb;
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .instructions-section.collapsed {
+    width: 60px;
+    max-height: 100vh;
+  }
+
+  .instructions-section.collapsed .instructions-title {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+  }
+
+  .toggle-button {
+    transform: rotate(0deg);
+  }
+
+  .instructions-section.collapsed .toggle-button {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+}
+
+/* Tablet View */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .instructions-section {
+    max-height: 40vh;
+  }
+}
+
+/* Mobile View */
+@media (max-width: 767px) {
+  .instructions-section {
+    max-height: 60vh;
+  }
+
+  .instructions-header {
+    padding: 10px 12px;
+  }
+
+  .instructions-title {
+    font-size: 16px;
+  }
+
+  .toggle-button {
+    font-size: 13px;
+    padding: 5px 10px;
+  }
+}
+
+/* Scrollbar Styling */
+.instructions-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.instructions-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.instructions-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.instructions-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

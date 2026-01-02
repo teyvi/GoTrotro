@@ -1,0 +1,151 @@
+/* Add these styles to your map.css file */
+
+/* Custom styles for the geocoder input */
+.maplibregl-ctrl-geocoder {
+    width: 100% !important;
+    max-width: unset !important;
+    font-size: 14px;
+    line-height: 20px;
+    border-radius: 4px;
+  }
+  
+  .maplibregl-ctrl-geocoder input {
+    height: 40px;
+    padding: 6px 35px 6px 10px !important;
+    border: 2px solid #AECACD !important;
+    border-radius: 4px !important;
+    transition: all 0.2s;
+  }
+  
+  .maplibregl-ctrl-geocoder input:hover {
+    background-color: #f9fafb;
+  }
+  
+  .maplibregl-ctrl-geocoder input:focus {
+    outline: none !important;
+    border-color: #93C5FD !important;
+  }
+  
+  /* Hide the geocoder icon */
+  .maplibregl-ctrl-geocoder--icon {
+    display: none !important;
+  }
+  
+  /* Style the geocoder suggestion list */
+  .maplibregl-ctrl-geocoder--suggestion-list {
+    border-radius: 4px;
+    margin-top: 4px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .maplibregl-ctrl-geocoder--suggestion {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  
+  .maplibregl-ctrl-geocoder--suggestion:hover {
+    background-color: #f3f4f6;
+  }
+  
+  /* Style the map container */
+  .map-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+  }
+  
+  /* Style for markers */
+  .maplibregl-marker {
+    cursor: pointer;
+  }
+  
+  /* Container for geocoder */
+  .geocoder-container {
+    position: relative;
+  }
+  
+  /* Position the icons properly */
+  .geocoder-container svg {
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  /* Style for route information panel */
+.route-info-panel {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    padding: 16px;
+    margin: 16px;
+    max-width: 250px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  
+  .route-info-panel h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    color: #202124;
+  }
+  
+  .route-info-panel p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #5f6368;
+  }
+  
+  .route-info-panel span.label {
+    font-weight: 500;
+    color: #202124;
+  }
+  
+  /* Style for markers */
+  .maplibregl-marker {
+    cursor: pointer;
+  }
+  
+  /* Custom animation for the route line */
+  @keyframes dashdraw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  
+  .route-line {
+    animation: dashdraw 2s linear forwards;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+  
+  /* Loading indicator styles */
+  .loading-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .spinner {
+    animation: spin 1s linear infinite;
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+  }
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
