@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {  MapPin, Clock, ArrowRight } from "lucide-react";
-import { Button } from "../assets/Button";
 import { cn } from "../lib/utils";
 import {
   LocationResult,
@@ -428,7 +427,7 @@ const SingleRoutes = () => {
                 ))}
               </div>
 
-              <Button
+              <button
                 className={cn(
                   "w-full rounded-none text-white flex justify-between items-center py-3",
                   index === 0
@@ -439,7 +438,7 @@ const SingleRoutes = () => {
               >
                 <span>Select This Route</span>
                 <ArrowRight size={18} />
-              </Button>
+              </button>
             </div>
           ))
         )}
