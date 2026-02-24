@@ -119,9 +119,6 @@ const LegCard: React.FC<{
             </span>
             <span className="route-name">{leg.routeInfo?.routeName}</span>
           </div>
-          <div className="leg-subtitle">
-            {leg.routeInfo?.headsign && `→ ${leg.routeInfo.headsign}`}
-          </div>
         </div>
       </div>
       
@@ -146,6 +143,9 @@ const WalkSteps: React.FC<{ steps: any[] }> = ({ steps }) => {
             <div className="step-distance">
               {RouteFormatter.formatDistance(step.distance)}
             </div>
+          </div>
+          <div className="leg-subtitle">
+            {leg.routeInfo?.headsign && `→ ${leg.routeInfo.headsign}`}
           </div>
         </div>
       ))}
