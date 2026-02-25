@@ -55,9 +55,9 @@ export class ValhallaAdapter implements RoutingAdapter {
   }
 
   public async getRoute(options: RoutingRequest): Promise<Itinerary[]> {
-    const costing = this.settings?.costing || 
-      (options.modes && options.modes.length > 0 
-        ? this.mapTransportationModeToCosting(options.modes[0]) 
+    const costing = this.settings?.costing ||
+      (options.modes && options.modes.length > 0
+        ? this.mapTransportationModeToCosting(options.modes[0])
         : 'auto');
 
     const requestBody: any = {
@@ -138,11 +138,13 @@ export class ValhallaAdapter implements RoutingAdapter {
   private parseStep(jsonManeuver: any): Step {
     const step: Step = {
       bodyRelativeDirection: BodyRelativeDirection.FORWARD,
-      windRoseDirection: jsonManeuver.begin_heading !== undefined 
+      windRoseDirection: jsonManeuver.begin_heading !== undefined
         ? this.parseWindRoseAngleToWindRoseName(jsonManeuver.begin_heading)
         : WindRoseDirection.UNKNOWN,
-      from: null,
-      to: null,
+      point: { // TODO: Parse real coordinates here
+        latitude: 0,
+        longitude: 0
+      },
       name: jsonManeuver.street_names?.join(', ') || jsonManeuver.instruction || "",
       stepType: StepType.TURN
     };
@@ -192,7 +194,7 @@ export class ValhallaAdapter implements RoutingAdapter {
 
   private parseLeg(jsonLeg: any, options: RoutingRequest): Leg {
     const steps: Step[] = [];
-    
+
     if (jsonLeg.maneuvers && Array.isArray(jsonLeg.maneuvers)) {
       for (const maneuver of jsonLeg.maneuvers) {
         steps.push(this.parseStep(maneuver));
@@ -223,7 +225,7 @@ export class ValhallaAdapter implements RoutingAdapter {
     if (jsonTrip.legs && Array.isArray(jsonTrip.legs)) {
       for (const jsonLeg of jsonTrip.legs) {
         legs.push(this.parseLeg(jsonLeg, options));
-        
+
         // Decode Valhalla's encoded polyline if present
         if (jsonLeg.shape) {
           const decoded = this.decodePolyline(jsonLeg.shape);

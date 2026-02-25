@@ -9,6 +9,7 @@ import {
   StepType,
   RoutingAdapter
 } from '../../types/mapTypes';
+import { decodePolyline } from '../../utils/polylineDecoder';
 
 export class OtpAdapter implements RoutingAdapter {
 
@@ -29,10 +30,10 @@ export class OtpAdapter implements RoutingAdapter {
 
   public async getRoute(options: RoutingRequest): Promise<Itinerary[]> {
     const now = new Date();
-const TransportationModeMap: Record<number, string> = {
-  [TransportationMode.TRANSIT]: "TRANSIT",
-  [TransportationMode.WALK]: "WALK",
-  }
+    const TransportationModeMap: Record<number, string> = {
+      [TransportationMode.TRANSIT]: "TRANSIT",
+      [TransportationMode.WALK]: "WALK",
+    }
 
     const params = new URLSearchParams({
       fromPlace: `${options.origin.latitude},${options.origin.longitude}`,
@@ -44,9 +45,9 @@ const TransportationModeMap: Record<number, string> = {
       }),
       date: `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}-${now.getFullYear()}`,
       mode: options.modes
-  ? options.modes.map((mode) => TransportationModeMap[mode]).join(",")
-  : "TRANSIT,WALK",
- // TODO: change this once this is configurable either in the app configuration or in the GUI by the user
+        ? options.modes.map((mode) => TransportationModeMap[mode]).join(",")
+        : "TRANSIT,WALK",
+      // TODO: change this once this is configurable either in the app configuration or in the GUI by the user
       maxWalkDistance: OtpAdapter.DEFAULT_MAX_WALK_DISTANCE.toString(),
       arriveBy: "false",
       wheelchair: String(options.wheelchair),
@@ -68,7 +69,7 @@ const TransportationModeMap: Record<number, string> = {
     }
 
     const itineraries: Itinerary[] = [];
-  if (!data.plan?.itineraries) throw new Error("No itinerary");
+    if (!data.plan?.itineraries) throw new Error("No itinerary");
 
     for (const jsonItinerary of data.plan.itineraries) {
       itineraries.push(this.parseItinerary(jsonItinerary))
@@ -82,13 +83,13 @@ const TransportationModeMap: Record<number, string> = {
     const step: Step = {
       bodyRelativeDirection: jsonStep.relativeDirection,
       windRoseDirection: jsonStep.absoluteDirection,
-      from: null,
-      to: null,
+      point: {
+        longitude: jsonStep.lon,
+        latitude: jsonStep.lat
+      },
       name: jsonStep.streetName,
       stepType: StepType.TURN
     }
-
-    geometry.push([jsonStep.lon, jsonStep.lat])
 
     // see http://dev.opentripplanner.org/apidoc/1.5.0/json_RelativeDirection.html
     // cast the OTP relativeDirection types to our BodyRelativeDirection enum and where necessary to our StepType enum
@@ -141,48 +142,50 @@ const TransportationModeMap: Record<number, string> = {
 
     return step;
   }
-private parseLeg(jsonLeg: any, geometry: Array<any>): Leg {
-  const leg: any = {
-    mode: jsonLeg.mode, // keep as string for UI checks like leg.mode === "WALK"
-    name: jsonLeg.route,
-     routeLongName: jsonLeg.routeLongName,
-    routeId: jsonLeg.routeId,
-    to: jsonLeg.to,
-    from: jsonLeg.from,
-    duration: jsonLeg.duration,
-    steps: Array.isArray(jsonLeg.steps)
-      ? jsonLeg.steps.map((jsonStep: any) => this.parseStep(jsonStep, geometry))
-      : [],
-  };
+  private parseLeg(jsonLeg: any, geometry: Array<any>): Leg {
+    const leg: any = {
+      mode: jsonLeg.mode, // keep as string for UI checks like leg.mode === "WALK"
+      name: jsonLeg.route,
+      routeLongName: jsonLeg.routeLongName,
+      routeId: jsonLeg.routeId,
+      to: jsonLeg.to,
+      from: jsonLeg.from,
+      duration: jsonLeg.duration,
+      steps: Array.isArray(jsonLeg.steps)
+        ? jsonLeg.steps.map((jsonStep: any) => this.parseStep(jsonStep, geometry))
+        : [],
+    };
 
-  // Preserve legGeometry from raw API response for polyline decoding
-  if (jsonLeg.legGeometry) {
-    leg.legGeometry = jsonLeg.legGeometry;
+    geometry.push(...decodePolyline(jsonLeg.legGeometry.points));
+
+    // // Preserve legGeometry from raw API response for polyline decoding
+    // if (jsonLeg.legGeometry) {
+    //   leg.legGeometry = jsonLeg.legGeometry;
+    // }
+
+    // Preserve distance from raw API response
+    if (jsonLeg.distance !== undefined) {
+      leg.distance = jsonLeg.distance;
+    }
+
+    return leg as Leg;
   }
 
-  // Preserve distance from raw API response
-  if (jsonLeg.distance !== undefined) {
-    leg.distance = jsonLeg.distance;
+  private parseItinerary(jsonItinerary: any): Itinerary {
+    let geometry: Array<any> = [];
+
+    return {
+      duration: jsonItinerary.duration,
+      startTime: new Date(jsonItinerary.startTime),
+      endTime: new Date(jsonItinerary.endTime),
+      legs: Array.isArray(jsonItinerary.legs)
+        ? jsonItinerary.legs.map((jsonLeg: any) => this.parseLeg(jsonLeg, geometry))
+        : [],
+      distance: jsonItinerary.walkDistance,
+      transfers: jsonItinerary.transfers ?? 0,
+      walkDistance: jsonItinerary.walkDistance ?? 0,
+      // @ts-expect-error
+      geometry: geometry,
+    };
   }
-
-  return leg as Leg;
-}
-
-private parseItinerary(jsonItinerary: any): Itinerary {
-  let geometry: Array<any> = [];
-
-  return {
-    duration: jsonItinerary.duration,
-    startTime: new Date(jsonItinerary.startTime),
-    endTime: new Date(jsonItinerary.endTime),
-    legs: Array.isArray(jsonItinerary.legs)
-      ? jsonItinerary.legs.map((jsonLeg: any) => this.parseLeg(jsonLeg, geometry))
-      : [],
-    distance: jsonItinerary.walkDistance,
-    transfers: jsonItinerary.transfers ?? 0,
-    walkDistance: jsonItinerary.walkDistance ?? 0,
-    // @ts-expect-error
-    geometry: geometry,
-  };
-}
 }

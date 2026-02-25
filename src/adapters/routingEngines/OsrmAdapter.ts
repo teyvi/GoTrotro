@@ -45,7 +45,7 @@ export class OSRMAdapter implements RoutingAdapter {
     }
 
     const data = await response.json();
-    
+
     if (data.code !== "Ok") {
       throw new Error(data.message || "OSRM API error");
     }
@@ -96,8 +96,10 @@ export class OSRMAdapter implements RoutingAdapter {
     const step: Step = {
       bodyRelativeDirection: jsonStep.maneuver.modifier,
       windRoseDirection: this.parseWindRoseAngleToWindRoseName(jsonStep.maneuver.bearing_after),
-      from: null,
-      to: null,
+      point: { // TODO: Parse real coordinates here
+        latitude: 0,
+        longitude: 0
+      },
       name: jsonStep.name,
       stepType: StepType.TURN
     }

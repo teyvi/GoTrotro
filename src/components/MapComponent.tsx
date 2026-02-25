@@ -91,84 +91,6 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /**
-   * Extracts and decodes geometry from itinerary legs
-   * Handles both decoded geometry arrays and encoded polyline strings
-   */
-  const extractGeometryFromItinerary = (itinerary: Itinerary | null): number[][] => {
-    if (!itinerary) {
-      return [];
-    }
-
-    const allCoordinates: number[][] = [];
-
-    // Check if geometry is directly on itinerary (already decoded)
-    // Only use this if it has valid coordinates
-    if (itinerary.geometry && Array.isArray(itinerary.geometry) && itinerary.geometry.length > 0) {
-      // Check if it's already in the correct format and has valid data
-      if (Array.isArray(itinerary.geometry[0]) && itinerary.geometry.length > 2) {
-        return itinerary.geometry as number[][];
-      }
-    }
-
-    // Try to extract from legs (for OTP API responses)
-    if (itinerary.legs && Array.isArray(itinerary.legs)) {
-      for (let i = 0; i < itinerary.legs.length; i++) {
-        const leg = itinerary.legs[i];
-        // legGeometry exists on OTP API response structure but not in type definition
-        const legGeometry = (leg as any).legGeometry;
-        
-        if (legGeometry?.points) {
-          // Decode encoded polyline string
-          const legAny = leg as any;
-          try {
-            const encodedPolyline = legGeometry.points;
-            const decodedCoords = decodePolyline(encodedPolyline);
-            if (decodedCoords.length > 0) {
-              allCoordinates.push(...decodedCoords);
-            }
-          } catch (error) {
-            // Try fallback: use walk steps for WALK mode, or leg start/end points
-            const legAny = leg as any;
-            if (legAny.mode === 'WALK' && legAny.steps && Array.isArray(legAny.steps) && legAny.steps.length > 0) {
-              // Use walk step coordinates for detailed path
-              for (const step of legAny.steps) {
-                if (step.lat !== undefined && step.lon !== undefined) {
-                  allCoordinates.push([step.lon, step.lat]);
-                }
-              }
-            } else if (legAny.from?.lat !== undefined && legAny.from?.lon !== undefined && 
-                legAny.to?.lat !== undefined && legAny.to?.lon !== undefined) {
-              allCoordinates.push([legAny.from.lon, legAny.from.lat]);
-              allCoordinates.push([legAny.to.lon, legAny.to.lat]);
-            }
-          }
-        } else if (legGeometry?.coordinates && Array.isArray(legGeometry.coordinates)) {
-          // Already decoded coordinates
-          allCoordinates.push(...legGeometry.coordinates);
-        } else {
-          // No encoded geometry - try to use walk steps for WALK mode, otherwise fall back to start/end
-          const legAny = leg as any;
-          if (legAny.mode === 'WALK' && legAny.steps && Array.isArray(legAny.steps) && legAny.steps.length > 0) {
-            // Use walk step coordinates for detailed walking path
-            for (const step of legAny.steps) {
-              if (step.lat !== undefined && step.lon !== undefined) {
-                allCoordinates.push([step.lon, step.lat]);
-              }
-            }
-          } else if (legAny.from?.lat && legAny.from?.lon && legAny.to?.lat && legAny.to?.lon) {
-            // Fallback: straight line for transit or when no step data available
-            allCoordinates.push([legAny.from.lon, legAny.from.lat]);
-            allCoordinates.push([legAny.to.lon, legAny.to.lat]);
-          }
-        }
-      }
-    }
-
-    return allCoordinates;
-  };
-
-
   const calculateRoute = useCallback(async () => {
     if (!originMarker || !destinationMarker) return;
 
@@ -204,32 +126,10 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
         }
 
         // Extract and decode geometry from legs
-        const coordinates = extractGeometryFromItinerary(itinerary);
+        const coordinates = itinerary.geometry;
 
         if (coordinates.length === 0) {
           throw new Error("No geometry data found in route");
-        }
-
-        // Ensure coordinates are properly formatted and remove any duplicates at leg boundaries
-        const cleanedCoordinates: [number, number][] = [];
-        
-        for (let i = 0; i < coordinates.length; i++) {
-          const coord = coordinates[i];
-          // Ensure coordinate is valid [lng, lat] pair
-          if (Array.isArray(coord) && coord.length >= 2 && 
-              typeof coord[0] === 'number' && typeof coord[1] === 'number' &&
-              !isNaN(coord[0]) && !isNaN(coord[1])) {
-            // Skip duplicate consecutive coordinates (at leg boundaries)
-            if (cleanedCoordinates.length === 0 || 
-                cleanedCoordinates[cleanedCoordinates.length - 1][0] !== coord[0] ||
-                cleanedCoordinates[cleanedCoordinates.length - 1][1] !== coord[1]) {
-              cleanedCoordinates.push([coord[0], coord[1]]);
-            }
-          }
-        }
-
-        if (cleanedCoordinates.length === 0) {
-          throw new Error("No valid coordinates found in route");
         }
 
         setRouteData({
@@ -237,7 +137,7 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
           properties: {},
           geometry: {
             type: "LineString",
-            coordinates: cleanedCoordinates,
+            coordinates: coordinates,
           },
         });
       }
@@ -384,6 +284,7 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
               id="route-source" 
               type="geojson" 
               data={routeData}
+
             >
               <Layer 
                 id="route"
@@ -409,8 +310,8 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
                   visibility: "visible"
                 }}
                 paint={{
-                  "line-color": "#FFFFFF",
-                  "line-width": 8,
+                  "line-color": "black",
+                  "line-width": 10,
                   "line-opacity": 0.5,
                   "line-gap-width": 0
                 }}
