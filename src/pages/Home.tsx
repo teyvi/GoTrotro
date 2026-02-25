@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {  MapPin, Clock, ArrowRight } from "lucide-react";
-import { Button } from "../assets/Button";
-import { cn } from "../lib/utils";
-import {
+import { MapPin, Clock, ArrowRight } from "lucide-react";
+ import {
   LocationResult,
   TransportationMode,
   RouteStep,
@@ -159,9 +157,8 @@ const SingleRoutes = () => {
             leg.routeLongName || leg.routeId?.split(":")[1] || leg.mode;
           return {
             type: "transit",
-            description: `Take ${leg.routeLongName} Trotro to ${
-              leg.to?.name || "destination"
-            }`,
+            description: `Take ${leg.routeLongName} Trotro to ${leg.to?.name || "destination"
+              }`,
             duration: stepDurationText,
             line: lineName,
           };
@@ -184,10 +181,10 @@ const SingleRoutes = () => {
     if (!selectedOrigin || !selectedDestination) {
       return;
     }
-    
+
     const originCoords = `${selectedOrigin.coordinates[0]},${selectedOrigin.coordinates[1]}`;
     const destCoords = `${selectedDestination.coordinates[0]},${selectedDestination.coordinates[1]}`;
-    
+
     navigate(
       `/route/${routeId}?origin=${encodeURIComponent(
         origin
@@ -367,19 +364,19 @@ const SingleRoutes = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mb-4"></div>
             <p className="text-gray-600">Finding routes...</p>
           </div>
-        ) : !hasSearched ? null : routeOptions.length === 0 ? ( 
+        ) : !hasSearched ? null : routeOptions.length === 0 ? (
           <>
-          <h2 className="text-xl font-bold mb-6 flex items-center">
-          <span className="bg-red-100 text-red-500 p-1 rounded-md mr-2">
-            <Clock size={18} />
-          </span>
-          Route Options
-        </h2>
-          <div className="text-gray-500 text-center">
-            No routes found. Try searching!
-          </div>
+            <h2 className="text-xl font-bold mb-6 flex items-center">
+              <span className="bg-red-100 text-red-500 p-1 rounded-md mr-2">
+                <Clock size={18} />
+              </span>
+              Route Options
+            </h2>
+            <div className="text-gray-500 text-center">
+              No routes found. Try searching!
+            </div>
           </>
-          
+
         ) : (
           routeOptions.map((route, index) => (
             <div
@@ -400,11 +397,10 @@ const SingleRoutes = () => {
                   <div key={idx} className="mb-3 last:mb-0">
                     <div className="flex gap-3">
                       <div
-                        className={`rounded-full w-8 h-8 flex items-center justify-center text-white ${
-                          step.type === "walk"
+                        className={`rounded-full w-8 h-8 flex items-center justify-center text-white ${step.type === "walk"
                             ? "bg-gradient-to-br from-gray-500 to-gray-600"
                             : "bg-gradient-to-br from-red-500 to-red-600"
-                        }`}
+                          }`}
                       >
                         {step.type === "walk" ? "🚶" : "🚌"}
                       </div>
@@ -428,18 +424,16 @@ const SingleRoutes = () => {
                 ))}
               </div>
 
-              <Button
-                className={cn(
-                  "w-full rounded-none text-white flex justify-between items-center py-3",
-                  index === 0
+              <button
+                className={`w-full rounded-none text-white flex justify-between items-center py-3 ${index === 0
                     ? "bg-red-500 hover:bg-red-600"
                     : "bg-red-400 hover:bg-red-500"
-                )}
+                  }`}
                 onClick={() => handleRouteSelect(route.id)}
               >
                 <span>Select This Route</span>
                 <ArrowRight size={18} />
-              </Button>
+              </button>
             </div>
           ))
         )}
