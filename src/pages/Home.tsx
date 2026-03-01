@@ -193,9 +193,8 @@ const SingleRoutes = () => {
   };
   return (
     <>
-      <div className="bg-gradient-to-r from-red-600 to-red-800 p-6 relative z-20">
-        <div className="absolute inset-0 bg-black opacity-10 pattern-diagonal-lines pattern-white pattern-bg-transparent pattern-size-2 pattern-opacity-5"></div>
-        <div className="container mx-auto max-w-lg relative z-10">
+      <header>
+        <div className="header-container">
           <h1 className="text-6xl font-bold text-white mb-6">GoTrotro</h1>
           <div className="relative">
             <div className="bg-white rounded-xl p-5 shadow-lg transform transition-all hover:shadow-xl">
@@ -356,7 +355,7 @@ const SingleRoutes = () => {
             {isLoadingRoutes ? "Searching..." : "Search"}
           </button>
         </div>
-      </div>
+      </header>
 
       <div className="container mx-auto max-w-lg p-4 relative z-10">
         {isLoadingRoutes ? (

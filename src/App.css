@@ -1,3 +1,25 @@
+html, body {
+  font-size: 18px;
+}
+
+header {
+  background: linear-gradient(90deg, rgba(220, 38, 38, 1) 0%, rgba(153, 27, 27, 1) 70%);
+  padding: 1.5rem;
+}
+
+h1 {
+  color: white;
+  font-weight: 700 !important;
+  font-size: 3.75rem !important;
+  line-height: 1;
+  margin-bottom: 1.5rem !important;
+}
+
+.header-container {
+  max-width: 32rem;
+  margin: 0 auto 0 auto;
+}
+
 body {
   margin: 0;
   padding: 0;
