@@ -196,8 +196,7 @@ const SingleRoutes = () => {
       <header>
         <div className="header-container">
           <h1 className="text-6xl font-bold text-white mb-6">GoTrotro</h1>
-          <div className="relative">
-            <div className="bg-white rounded-xl p-5 shadow-lg transform transition-all hover:shadow-xl">
+          <form>
               {/* Origin Input */}
               <div className="flex items-center gap-3 mb-4 relative">
                 <div className="rounded-full bg-red-100 p-2">
@@ -207,7 +206,7 @@ const SingleRoutes = () => {
                   <input
                     type="text"
                     placeholder="Origin"
-                    className="w-full p-2 border-b focus:border-red-300 focus:outline-none transition-all"
+                    className="w-full p-2 border-b"
                     value={origin}
                     onChange={handleOriginInputChange}
                     onFocus={() => setShowOriginSuggestions(true)}
@@ -279,7 +278,7 @@ const SingleRoutes = () => {
                   <input
                     type="text"
                     placeholder="Destination"
-                    className="w-full p-2 border-b focus:border-red-300 focus:outline-none transition-all"
+                    className="w-full p-2 border-b"
                     value={destination}
                     onChange={handleDestinationInputChange}
                     onFocus={() => setShowDestinationSuggestions(true)}
@@ -343,17 +342,15 @@ const SingleRoutes = () => {
                     )}
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* search button*/}
-          <button
-            className=" mt-5 w-full p-2 border-stone-50 bg-gray-400 rounded-2xl focus:border-red-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={handleSubmit}
-            disabled={isLoadingRoutes}
-          >
-            {isLoadingRoutes ? "Searching..." : "Search"}
-          </button>
+              {/* search button*/}
+              <input
+                type="submit"
+                className="mt-5 w-full p-2"
+                onClick={handleSubmit}
+                disabled={isLoadingRoutes}
+                value={isLoadingRoutes ? "Searching..." : "Search"}
+              />
+          </form>
         </div>
       </header>
 
