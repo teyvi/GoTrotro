@@ -252,6 +252,11 @@ code {
   /* border-bottom: 0.2rem dotted hsl(0, 84%, 60%); */
 }
 
+.notification-text {
+  text-align: center;
+  font-weight: 300;
+}
+
 svg {
   display: inline-block !important;
   margin: 0 0.5rem 0 0.5rem;

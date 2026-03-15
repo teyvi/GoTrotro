@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, ArrowRight } from "lucide-react";
+import { MapPin, Clock } from "lucide-react";
  import {
   LocationResult,
   TransportationMode,
@@ -210,14 +210,7 @@ const SingleRoutes = () => {
                   />
 
                   {isSearchingOrigin && (
-                    <div className="absolute z-[1000] w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
-                      <div className="flex justify-center items-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-500 mr-2"></div>
-                        <span className="text-sm text-gray-600">
-                          Searching origins...
-                        </span>
-                      </div>
-                    </div>
+                    <p className="notification-text">Searching origins...</p>
                   )}
 
                   {showOriginSuggestions &&
@@ -255,11 +248,7 @@ const SingleRoutes = () => {
                     !isSearchingOrigin &&
                     debouncedOrigin.length > 2 &&
                     originResults.length === 0 && (
-                      <div className="absolute z-[1000] w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
-                        <p className="text-sm text-gray-600 text-center">
-                          No results found
-                        </p>
-                      </div>
+                      <p className="notification-text">No results found</p>
                     )}
                 </div>
               </div>
@@ -277,14 +266,7 @@ const SingleRoutes = () => {
                   />
 
                   {isSearchingDestination && showDestinationSuggestions && (
-                    <div className="absolute z-[1000] w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
-                      <div className="flex justify-center items-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-500 mr-2"></div>
-                        <span className="text-sm text-gray-600">
-                          Searching...
-                        </span>
-                      </div>
-                    </div>
+                    <p className="notification-text">Searching...</p>
                   )}
 
                   {showDestinationSuggestions &&
@@ -324,11 +306,7 @@ const SingleRoutes = () => {
                     !isSearchingDestination &&
                     debouncedDestination.length > 2 &&
                     destinationResults.length === 0 && (
-                      <div className="absolute z-[1000] w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
-                        <p className="text-sm text-gray-600 text-center">
-                          No results found
-                        </p>
-                      </div>
+                        <p className="notification-text">No results found</p>
                     )}
                 </div>
               </div>
@@ -345,21 +323,12 @@ const SingleRoutes = () => {
 
       <div className="centered-container">
         {isLoadingRoutes ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mb-4"></div>
-            <p className="text-gray-600">Finding routes...</p>
-          </div>
+          <p className="notification-text">Finding routes...</p>
         ) : !hasSearched ? null : routeOptions.length === 0 ? (
           <>
-            <h2 className="text-xl font-bold mb-6 flex items-center">
-              <span className="bg-red-100 text-red-500 p-1 rounded-md mr-2">
-                <Clock size={18} />
-              </span>
-              Route Options
-            </h2>
-            <div className="text-gray-500 text-center">
+            <p className="notification-text">
               No routes found. Try searching!
-            </div>
+            </p>
           </>
 
         ) : (
@@ -398,9 +367,6 @@ const SingleRoutes = () => {
                         )}
                       </span>
                     </p>
-                    {idx < route.steps.length - 1 && (
-                      <div className="border-l-2 border-dashed border-gray-300 h-6 ml-4 my-1"></div>
-                    )}
                   </li>
                 ))}
               </ol>
