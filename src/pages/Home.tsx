@@ -194,19 +194,16 @@ const SingleRoutes = () => {
   return (
     <>
       <header>
-        <div className="header-container">
-          <h1 className="text-6xl font-bold text-white mb-6">GoTrotro</h1>
+        <div className="centered-container">
+          <h1>GoTrotro</h1>
           <form>
               {/* Origin Input */}
-              <div className="flex items-center gap-3 mb-4 relative">
-                <div className="rounded-full bg-red-100 p-2">
-                  <MapPin className="text-red-500" size={22} />
-                </div>
-                <div className="flex-1 relative">
+              <div>
+                <MapPin className="start-pin" size={22} />
+                <div className="input-container">
                   <input
                     type="text"
                     placeholder="Origin"
-                    className="w-full p-2 border-b"
                     value={origin}
                     onChange={handleOriginInputChange}
                     onFocus={() => setShowOriginSuggestions(true)}
@@ -226,24 +223,22 @@ const SingleRoutes = () => {
                   {showOriginSuggestions &&
                     !isSearchingOrigin &&
                     originResults.length > 0 && (
-                      <div className="absolute z-[1000] w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
+                      <ul className="search-suggestions">
                         {originResults.map((suggestion, index) => (
-                          <div
+                          <li
                             key={`origin-${index}`}
-                            className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors duration-150 flex items-start"
+                            tabIndex={0}
                             onClick={() => handleSelectOrigin(suggestion)}
                           >
-                            <div className="mr-3 mt-0.5">
-                              <MapPin
-                                size={16}
-                                className="text-red-500 flex-shrink-0"
-                              />
-                            </div>
+                            <MapPin
+                              className="start-pin"
+                              size={16}
+                             />
                             <div>
-                              <p className="text-sm font-medium text-gray-900 truncate">
+                              <p className="title">
                                 {suggestion.place_name.split(",")[0]}
                               </p>
-                              <p className="text-xs text-gray-500 truncate">
+                              <p className="address">
                                 {suggestion.place_name
                                   .split(",")
                                   .slice(1)
@@ -251,9 +246,9 @@ const SingleRoutes = () => {
                                   .trim()}
                               </p>
                             </div>
-                          </div>
+                          </li>
                         ))}
-                      </div>
+                      </ul>
                     )}
 
                   {showOriginSuggestions &&
@@ -270,15 +265,12 @@ const SingleRoutes = () => {
               </div>
 
               {/*Destination input*/}
-              <div className="flex items-center gap-3 relative">
-                <div className="rounded-full bg-green-100 p-2">
-                  <MapPin className="text-green-500" size={22} />
-                </div>
-                <div className="flex-1 relative">
+              <div>
+                <MapPin className="dest-pin" size={22} />
+                <div className="input-container">
                   <input
                     type="text"
                     placeholder="Destination"
-                    className="w-full p-2 border-b"
                     value={destination}
                     onChange={handleDestinationInputChange}
                     onFocus={() => setShowDestinationSuggestions(true)}
@@ -298,26 +290,24 @@ const SingleRoutes = () => {
                   {showDestinationSuggestions &&
                     !isSearchingDestination &&
                     destinationResults.length > 0 && (
-                      <div className="absolute z-[1000] w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
+                      <ul className="search-suggestions">
                         {destinationResults.map((suggestion, index) => (
-                          <div
+                          <li
                             key={`dest-${index}`}
-                            className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors duration-150 flex items-start"
+                            tabIndex={0}
                             onClick={() =>
                               handleSelectedDestination(suggestion)
                             }
                           >
-                            <div className="mr-3 mt-0.5">
-                              <MapPin
-                                size={16}
-                                className="text-red-500 flex-shrink-0"
+                            <MapPin
+                              size={16}
+                              className="start-pin"
                               />
-                            </div>
                             <div>
-                              <p className="text-sm font-medium text-gray-900 truncate">
+                              <p className="title">
                                 {suggestion.place_name.split(",")[0]}
                               </p>
-                              <p className="text-xs text-gray-500 truncate">
+                              <p className="address">
                                 {suggestion.place_name
                                   .split(",")
                                   .slice(1)
@@ -325,9 +315,9 @@ const SingleRoutes = () => {
                                   .trim()}
                               </p>
                             </div>
-                          </div>
+                          </li>
                         ))}
-                      </div>
+                      </ul>
                     )}
 
                   {showDestinationSuggestions &&
@@ -345,7 +335,6 @@ const SingleRoutes = () => {
               {/* search button*/}
               <input
                 type="submit"
-                className="mt-5 w-full p-2"
                 onClick={handleSubmit}
                 disabled={isLoadingRoutes}
                 value={isLoadingRoutes ? "Searching..." : "Search"}
@@ -354,7 +343,7 @@ const SingleRoutes = () => {
         </div>
       </header>
 
-      <div className="container mx-auto max-w-lg p-4 relative z-10">
+      <div className="centered-container">
         {isLoadingRoutes ? (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mb-4"></div>
@@ -377,58 +366,49 @@ const SingleRoutes = () => {
           routeOptions.map((route, index) => (
             <div
               key={route.id}
-              className="bg-white rounded-xl shadow-md mb-5 overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100"
+              className="route-details-container"
             >
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4">
-                <div className="flex justify-between items-center mb-2">
-                  <div className="flex items-center">
-                    <Clock size={16} className="text-red-500 mr-2" />
-                    <div className="font-medium">{route.duration}</div>
-                  </div>
-                </div>
+              <div className="title">
+                <Clock size={16} />
+                <span>{route.duration}</span>
               </div>
 
-              <div className="p-4">
+              <ol className="route-details">
                 {route.steps.map((step, idx) => (
-                  <div key={idx} className="mb-3 last:mb-0">
-                    <div className="flex gap-3">
-                      <div
-                        className={`rounded-full w-8 h-8 flex items-center justify-center text-white ${step.type === "walk"
-                            ? "bg-gradient-to-br from-gray-500 to-gray-600"
-                            : "bg-gradient-to-br from-red-500 to-red-600"
+                  // ToDo: Recycle style from "Route details" on map view.
+                  <li key={idx}>
+                    <div aria-hidden={true} role="presentation"
+                        // ToDo: Replace symbol markup with real SVG
+                        className={`${step.type === "walk"
+                            ? "walk-symbol"
+                            : "pt-symbol"
                           }`}
                       >
                         {step.type === "walk" ? "🚶" : "🚌"}
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium">{step.description}</div>
-                        <div className="text-sm text-gray-500 flex items-center">
-                          <Clock size={14} className="mr-1 inline" />
-                          {step.duration}
-                          {step.line && (
-                            <span className="ml-2 bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-xs">
-                              Route {step.line}
-                            </span>
-                          )}
-                        </div>
-                      </div>
                     </div>
+                    <p>
+                      <span className="title">{step.description}</span>
+                      <span className="description">
+                        <Clock size={14} className="" />
+                        {step.duration}
+                        {step.line && (
+                          <span className="label label-red">
+                            Route {step.line}
+                          </span>
+                        )}
+                      </span>
+                    </p>
                     {idx < route.steps.length - 1 && (
                       <div className="border-l-2 border-dashed border-gray-300 h-6 ml-4 my-1"></div>
                     )}
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ol>
 
               <button
-                className={`w-full rounded-none text-white flex justify-between items-center py-3 ${index === 0
-                    ? "bg-red-500 hover:bg-red-600"
-                    : "bg-red-400 hover:bg-red-500"
-                  }`}
                 onClick={() => handleRouteSelect(route.id)}
               >
                 <span>Select This Route</span>
-                <ArrowRight size={18} />
               </button>
             </div>
           ))
