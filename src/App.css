@@ -1,6 +1,99 @@
-body {
+html, body {
+  font-size: 18px;
   margin: 0;
   padding: 0;
+}
+
+header svg {
+  margin: 0.5rem;
+}
+
+.start-pin {
+  color: hsl(0, 72%, 51%);
+}
+
+.dest-pin {
+  color: rgb(34 197 94);
+}
+
+header {
+  background: linear-gradient(90deg, hsl(0, 72%, 51%) 0%, hsl(0, 70%, 35%) 70%);
+  padding: 1.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.input-container {
+  width: 100% !important;
+  position: relative;
+
+}
+
+.centered-container {
+  max-width: 32rem;
+  margin: 0 auto 0 auto;
+}
+
+h1 {
+  color: white;
+  font-weight: 700 !important;
+  font-size: 3.75rem !important;
+  line-height: 1;
+  margin-bottom: 1.5rem !important;
+}
+
+header form, input, button {
+  border-radius: 0.8rem;
+}
+
+header form {
+  background-color: white;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  padding: 1.5rem;
+}
+
+header form > div {
+  display: flex;
+  margin-bottom: 1rem;
+  gap: 0.75rem;
+}
+
+header form > div > svg {
+  border-radius: 100%;
+}
+
+input {
+  padding: 0.5rem;
+  width: 100%;
+}
+
+input[type="text"] {
+  border: none;
+  border-bottom: 0.1rem solid hsl(0, 70%, 35%);
+  padding: 0.2rem;
+  border-radius: 0;
+  width: 100%;
+  
+}
+
+input[type="submit"], button {
+  border: none;
+  background: hsl(0, 70%, 35%) !important;
+  color: white !important;
+  padding: 0.5rem !important;
+  display: block;
+  width: 100%;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+input:focus, button:focus, *:focus {
+  outline: 0.15rem solid black;
+  outline-offset: 0.2rem;
+  border-radius: 0.2rem;
+  border: none;
+}
+
+body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
   'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
   sans-serif;
@@ -11,4 +104,160 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
   monospace;
+}
+
+/* mt-1 shadow-lg border border-gray-200 max-h-60 overflow-y-auto */
+.search-suggestions {
+  padding: 0;
+  box-sizing: border-box;
+  position: absolute;
+  width: 100%;
+  z-index: 100;
+  background-color: white !important;
+  border-bottom-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  margin: 0;
+}
+
+/* px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors duration-150 flex items-start */
+.search-suggestions > li {
+  list-style: none;
+  margin: 0;
+  display: inline-flex;
+  cursor: pointer;
+  padding: 0.2rem 0 0.2rem 0;
+  box-sizing: border-box;
+  
+}
+
+.search-suggestions > li:hover {
+  background-color: lightgrey;
+}
+
+.search-suggestions > li svg {
+  align-self: center;
+  flex-basis: 10%;
+  margin: 0;
+}
+
+.search-suggestions > li div {
+  flex-basis: 90%;
+}
+
+.search-suggestions > li .title {
+  font-weight: 500;
+  font-size: 1rem;
+  margin: 0.8em 0 0 0;
+}
+
+.search-suggestions>li .address {
+  font-weight: 100;
+  font-size: 0.8rem;
+  margin: 0.5em 0 0 0;
+}
+
+.route-details-container {
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  margin-bottom: 1.25rem;
+  font-weight: 500;
+  border: 0.2rem solid hsl(0, 70%, 35%);
+}
+
+.route-details-container > button {
+  margin: 1rem 1.5rem 1rem 1.5rem;
+  width: 90%;
+}
+
+.route-details-container > *:first-child {
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+}
+
+.route-details-container > .title {
+  background-color: hsl(220, 14%, 96%);
+  padding: 1rem;
+}
+
+.route-details-container svg {
+  color: rgb(239 68 68);
+}
+
+.route-details-container > .route-details {
+  padding: 1rem;
+  margin: 0;
+}
+
+.route-details > li {
+  list-style: none;
+  margin-bottom: 0.8rem;
+  display: flex;
+  gap: 0.8rem;
+  align-items: baseline;
+}
+
+.route-details > li > *:first-child {
+  max-width: 5%;
+}
+
+.route-details > li:last-child {
+  margin-bottom: 0;
+}
+
+.route-details > li > p {
+  display: inline-block;
+  margin: 0;
+}
+
+.route-details > li > p > * {
+  display: inline-block;
+}
+
+.route-details > li .title {
+  width: 100%;
+}
+
+.route-details > li .description {
+  font-weight: 300;
+  min-height: 0.5rem;
+  box-sizing: border-box;
+  padding-top: 0.5rem;
+
+}
+
+.route-details > li > *[role="presentation"] {
+  display: inline-flex;
+  align-items: center;
+  justify-items: center;
+  border-radius: 100%;
+  width: 2rem;
+  height: 2rem;
+  text-align: center;
+}
+
+.route-details>li .description > .label {
+  margin: 0 0.4rem 0 0.4rem;
+}
+
+.label {
+  display: inline-block;
+  padding: 0 0.5rem 0 0.5rem;
+  box-sizing: border-box;
+}
+
+.label-red {
+  border-radius: 5rem;
+  outline: 0.2rem dotted hsl(0, 84%, 60%);
+  /* border-bottom: 0.2rem dotted hsl(0, 84%, 60%); */
+}
+
+.notification-text {
+  text-align: center;
+  font-weight: 300;
+}
+
+svg {
+  display: inline-block !important;
+  margin: 0 0.5rem 0 0.5rem;
 }
