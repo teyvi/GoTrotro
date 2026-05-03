@@ -240,8 +240,7 @@ export class ValhallaAdapter implements RoutingAdapter {
       endTime: endTime,
       legs: legs,
       distance: jsonTrip.summary?.length ? jsonTrip.summary.length * 1000 : 0, // Convert km to meters
-      // @ts-expect-error - geometry format is correct
-      geometry: geometryCoordinates,
+       geometry: geometryCoordinates,
       plan: JSON.stringify(geometryCoordinates),
     };
   }

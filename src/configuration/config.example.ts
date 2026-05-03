@@ -166,7 +166,7 @@ export const exampleConfig5: AppConfiguration = {
  * Add these to your .env file to configure endpoints:
  * 
  * # Routing Engines
- * REACT_APP_OTP_API=http://localhost:8080/otp/routers/default/plan
+ * REACT_APP_OTP_API=https://api.trotro.app/otp/routers/default/plan
  * REACT_APP_OSRM_API=https://router.project-osrm.org
  * REACT_APP_VALHALLA_API=https://valhalla1.openstreetmap.de
  * 

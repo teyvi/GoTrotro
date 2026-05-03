@@ -136,14 +136,16 @@ export type Leg = {
 }
 
 export type Itinerary = {
-  plan: string,
-  distance: number,
-  duration: number,
-  startTime: Date,
-  endTime: Date,
-  legs: Leg[],
-  geometry: [[number, number]]
-} | null
+  plan: string;
+  distance: number;
+  duration: number;
+  startTime: Date;
+  endTime: Date;
+  legs: Leg[];
+  geometry: [number, number][];
+  transfers?: number;
+  walkDistance?: number;
+} | null;
 
 export type Step = {
   name: string,

@@ -144,9 +144,6 @@ const WalkSteps: React.FC<{ steps: any[] }> = ({ steps }) => {
               {RouteFormatter.formatDistance(step.distance)}
             </div>
           </div>
-          <div className="leg-subtitle">
-            {leg.routeInfo?.headsign && `→ ${leg.routeInfo.headsign}`}
-          </div>
         </div>
       ))}
     </div>

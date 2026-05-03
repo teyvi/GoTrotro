@@ -12,7 +12,7 @@ const appConfiguration: AppConfiguration = {
   defaultRoutingEngine: "otp",
   routingEngines: {
     "otp": new OtpAdapter(
-      process.env.REACT_APP_OTP_API || 'http://localhost:8080/otp/routers/default/plan'
+      process.env.REACT_APP_OTP_API || 'https://api.trotro.app/otp/routers/default/plan'
     ),
     "osrm": new OSRMAdapter(
       process.env.REACT_APP_OSRM_API || 'https://router.project-osrm.org',

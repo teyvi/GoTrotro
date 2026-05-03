@@ -54,12 +54,31 @@ export class OtpAdapter implements RoutingAdapter {
       locale: "en", //TODO: Make aware of multiple languages
       // Request full geometry detail for all legs (may not be supported by all OTP versions)
       showIntermediateStops: "true",
+      itinIndex: "0",
     });
 
-    console.log(`${this.otpEndpointURL}?${params.toString()}`);
+    const requestUrl = new URL(this.otpEndpointURL.toString());
+    const isRootPath = requestUrl.pathname === "/" || requestUrl.pathname === "";
+    const isPlannerModulePath =
+      isRootPath && requestUrl.searchParams.get("module") === "planner";
+    if (isRootPath || isPlannerModulePath) {
+      // Some deployments expose an OTP web UI on "/" and JSON planner at this path.
+      requestUrl.pathname = "/otp/routers/default/plan";
+      requestUrl.searchParams.delete("module");
+    }
 
-    const response = await fetch(`${this.otpEndpointURL}?${params}`);
-    if (response.headers.get("Content-Type") !== "application/json") {
+    for (const [key, value] of params.entries()) {
+      requestUrl.searchParams.set(key, value);
+    }
+
+    console.log(requestUrl.toString());
+
+    const response = await fetch(requestUrl.toString());
+    if (!response.ok) {
+      throw new Error(`OTP API request failed (${response.status})`);
+    }
+    const contentType = response.headers.get("Content-Type") || "";
+    if (!contentType.includes("application/json")) {
       throw new TypeError("OTP API endpoint did not return JSON")
     }
     const data = await response.json();
@@ -175,6 +194,7 @@ export class OtpAdapter implements RoutingAdapter {
     let geometry: Array<any> = [];
 
     return {
+      plan: JSON.stringify(jsonItinerary),
       duration: jsonItinerary.duration,
       startTime: new Date(jsonItinerary.startTime),
       endTime: new Date(jsonItinerary.endTime),
@@ -184,7 +204,6 @@ export class OtpAdapter implements RoutingAdapter {
       distance: jsonItinerary.walkDistance,
       transfers: jsonItinerary.transfers ?? 0,
       walkDistance: jsonItinerary.walkDistance ?? 0,
-      // @ts-expect-error
       geometry: geometry,
     };
   }

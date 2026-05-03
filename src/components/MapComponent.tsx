@@ -280,10 +280,12 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
         {routeData && routeData.geometry.coordinates.length > 0 && (
           <>
             {/* Main route line */}
+            {/* Main route line */}
             <Source 
               id="route-source" 
               type="geojson" 
               data={routeData}
+
 
             >
               <Layer 
@@ -301,6 +303,11 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
                 }}
               />
               {/* Route outline for better visibility */}
+              {/* Route outline for better visibility */}
+              {/* Route outline for better visibility */}
+              {/* Route outline for better visibility */}
+              {/* Route outline for better visibility */}
+              {/* Route outline for better visibility */}
               <Layer 
                 id="route-outline"
                 type="line"
@@ -310,10 +317,9 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
                   visibility: "visible"
                 }}
                 paint={{
-                  "line-color": "black",
-                  "line-width": 10,
-                  "line-opacity": 0.5,
-                  "line-gap-width": 0
+                  "line-color": "#111827",
+                  "line-width": 8,
+                  "line-opacity": 0.22,
                 }}
                 beforeId="route"
               />
