@@ -10,6 +10,11 @@
   height: 100%;
 }
 
+.maplibregl-ctrl-group button {
+  background: #ffffff !important;
+  color: #111827 !important;
+}
+
 .map-marker {
   display: flex;
   flex-direction: column;

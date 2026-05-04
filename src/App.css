@@ -75,7 +75,7 @@ input[type="text"] {
   
 }
 
-input[type="submit"], button {
+input[type="submit"] button {
   border: none;
   background: hsl(0, 70%, 35%) !important;
   color: white !important;

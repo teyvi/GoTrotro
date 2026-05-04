@@ -205,17 +205,17 @@ function MapComponent({
       );
 
       const modeStartFeatures: ModeStartFeature[] = selectedItinerary.legs
-      .filter((leg) => leg.mode !== "WALK" && leg.coordinates.length > 0)
-      .map((leg) => ({
-        type: "Feature",
-        properties: {
-          mode: leg.mode,
-        },
-        geometry: {
-          type: "Point",
-          coordinates: leg.coordinates[0],
-        },
-      }));
+        .filter((leg) => leg.mode !== "WALK" && leg.coordinates.length > 0)
+        .map((leg) => ({
+          type: "Feature",
+          properties: {
+            mode: leg.mode,
+          },
+          geometry: {
+            type: "Point",
+            coordinates: leg.coordinates[0],
+          },
+        }));
 
       setRouteSegmentsData({
         type: "FeatureCollection",
@@ -224,9 +224,9 @@ function MapComponent({
       setAlternativeRouteSegmentsData(
         alternativeSegmentFeatures.length > 0
           ? {
-              type: "FeatureCollection",
-              features: alternativeSegmentFeatures,
-            }
+            type: "FeatureCollection",
+            features: alternativeSegmentFeatures,
+          }
           : null
       );
       setModeStartsData({
@@ -242,10 +242,10 @@ function MapComponent({
 
     // Create a unique key for this origin/destination pair
     const routeKey = `${originMarker.coordinates.longitude},${originMarker.coordinates.latitude}-${destinationMarker.coordinates.longitude},${destinationMarker.coordinates.latitude}`;
-    
+
     // Guard: only calculate if we haven't calculated for this pair
     if (routeCalculatedRef.current === routeKey) return;
-    
+
     routeCalculatedRef.current = routeKey;
     setLoading(true);
     try {
@@ -255,7 +255,7 @@ function MapComponent({
         modes: [TransportationMode.TRANSIT, TransportationMode.WALK],
         wheelchair: false,
       };
-      
+
       const routes = await routingEngineInstance.getRoute(routingRequest);
 
       if (routes.length > 0) {
@@ -282,7 +282,7 @@ function MapComponent({
     } catch (error) {
       routeCalculatedRef.current = ""; // Reset on error so it can retry
       applyItineraryToMap(null, []);
-      
+
       onItinerariesChangeRef.current?.([]);
     } finally {
       setLoading(false);
@@ -530,13 +530,13 @@ function MapComponent({
 
         {routeSegmentsData && routeSegmentsData.features.length > 0 && (
           <>
-            <Source 
-              id="route-segments-source" 
-              type="geojson" 
+            <Source
+              id="route-segments-source"
+              type="geojson"
               data={routeSegmentsData}
             >
               {/* Route outline for better visibility */}
-              <Layer 
+              <Layer
                 id="route-outline"
                 type="line"
                 layout={{
@@ -551,7 +551,7 @@ function MapComponent({
                 }}
               />
 
-              <Layer 
+              <Layer
                 id="route"
                 type="line"
                 layout={{
