@@ -30,7 +30,9 @@ import { transformOTPItinerary } from "../utils/otpTransformer";
 import { DisplayItinerary } from "../types/routeDisplay";
 
 interface MapComponentProps {
-  onItineraryChange?: (itinerary: DisplayItinerary | null) => void;
+  itineraries: DisplayItinerary[];
+  selectedItineraryId: string | null;
+  onItinerariesChange?: (itineraries: DisplayItinerary[]) => void;
 }
 
 type RouteSegmentFeature = {
@@ -98,24 +100,37 @@ const getModeStartLabel = (mode: string): string => {
   }
 };
 
-function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
+function MapComponent({
+  itineraries,
+  selectedItineraryId,
+  onItinerariesChange,
+}: MapComponentProps) {
   const [searchParams] = useSearchParams();
   const mapRef = useRef<MapRef>(null);
   const [originMarker, setOriginMarker] = useState<Location | null>(null);
   const [destinationMarker, setDestinationMarker] = useState<Location | null>(
     null
   );
+  const previousItinerarySetRef = useRef<string>("");
+  const previousSelectedItineraryIdRef = useRef<string | null>(null);
   const [routeSegmentsData, setRouteSegmentsData] = useState<RouteSegmentsData | null>(null);
+  const [alternativeRouteSegmentsData, setAlternativeRouteSegmentsData] =
+    useState<RouteSegmentsData | null>(null);
   const [modeStartsData, setModeStartsData] = useState<ModeStartsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [origin, setOrigin] = useState<LocationResult | null>(null);
   const [destination, setDestination] = useState<LocationResult | null>(null);
   const routeCalculatedRef = useRef<string>("");
+  const onItinerariesChangeRef = useRef(onItinerariesChange);
 
   const routingEngineInstance: RoutingAdapter = useMemo(
     () => appConfiguration.routingEngines[appConfiguration.defaultRoutingEngine],
     []
   );
+
+  useEffect(() => {
+    onItinerariesChangeRef.current = onItinerariesChange;
+  }, [onItinerariesChange]);
 
   // Parse URL params to get origin and destination coordinates - run only once on mount
   useEffect(() => {
@@ -154,6 +169,74 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const createSegmentFeatures = useCallback((itinerary: DisplayItinerary): RouteSegmentFeature[] => {
+    return itinerary.legs
+      .filter((leg) => leg.coordinates.length > 0)
+      .map((leg) => ({
+        type: "Feature",
+        properties: {
+          mode: leg.mode,
+          segmentColor: getSegmentColor(leg.mode, leg.routeInfo?.routeColor),
+        },
+        geometry: {
+          type: "LineString",
+          coordinates: leg.coordinates,
+        },
+      }));
+  }, []);
+
+  const getItineraryCoordinates = useCallback((itinerary: DisplayItinerary): [number, number][] => {
+    return itinerary.legs.flatMap((leg) => leg.coordinates);
+  }, []);
+
+  const applyItineraryToMap = useCallback(
+    (selectedItinerary: DisplayItinerary | null, alternativeItineraries: DisplayItinerary[] = []) => {
+      if (!selectedItinerary) {
+        setRouteSegmentsData(null);
+        setAlternativeRouteSegmentsData(null);
+        setModeStartsData(null);
+        return;
+      }
+
+      const segmentFeatures = createSegmentFeatures(selectedItinerary);
+
+      const alternativeSegmentFeatures = alternativeItineraries.flatMap((itinerary) =>
+        createSegmentFeatures(itinerary)
+      );
+
+      const modeStartFeatures: ModeStartFeature[] = selectedItinerary.legs
+      .filter((leg) => leg.mode !== "WALK" && leg.coordinates.length > 0)
+      .map((leg) => ({
+        type: "Feature",
+        properties: {
+          mode: leg.mode,
+        },
+        geometry: {
+          type: "Point",
+          coordinates: leg.coordinates[0],
+        },
+      }));
+
+      setRouteSegmentsData({
+        type: "FeatureCollection",
+        features: segmentFeatures,
+      });
+      setAlternativeRouteSegmentsData(
+        alternativeSegmentFeatures.length > 0
+          ? {
+              type: "FeatureCollection",
+              features: alternativeSegmentFeatures,
+            }
+          : null
+      );
+      setModeStartsData({
+        type: "FeatureCollection",
+        features: modeStartFeatures,
+      });
+    },
+    [createSegmentFeatures]
+  );
+
   const calculateRoute = useCallback(async () => {
     if (!originMarker || !destinationMarker) return;
 
@@ -176,71 +259,40 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
       const routes = await routingEngineInstance.getRoute(routingRequest);
 
       if (routes.length > 0) {
-        const itinerary = routes[0];
+        const transformedItineraries = routes
+          .filter((itinerary): itinerary is NonNullable<typeof itinerary> => Boolean(itinerary))
+          .map((itinerary, index) => transformOTPItinerary(itinerary, index))
+          .filter((itinerary) => itinerary.legs.length > 0);
 
-        if (!itinerary) {
-          throw new Error("Invalid itinerary data");
+        if (transformedItineraries.length === 0) {
+          throw new Error("No itinerary data found");
         }
 
-        // Transform itinerary for RouteInstructions component and notify parent
-        const transformedRoute = transformOTPItinerary(itinerary);
-        if (onItineraryChange) {
-          onItineraryChange(transformedRoute);
-        }
+        onItinerariesChangeRef.current?.(transformedItineraries);
 
-        const segmentFeatures: RouteSegmentFeature[] = transformedRoute.legs
-          .filter((leg) => leg.coordinates.length > 0)
-          .map((leg) => ({
-            type: "Feature",
-            properties: {
-              mode: leg.mode,
-              segmentColor: getSegmentColor(leg.mode, leg.routeInfo?.routeColor),
-            },
-            geometry: {
-              type: "LineString",
-              coordinates: leg.coordinates,
-            },
-          }));
-
-        if (segmentFeatures.length === 0) {
-          throw new Error("No leg geometry found in route");
-        }
-
-        const modeStartFeatures: ModeStartFeature[] = transformedRoute.legs
-          .filter((leg) => leg.mode !== "WALK" && leg.coordinates.length > 0)
-          .map((leg) => ({
-            type: "Feature",
-            properties: {
-              mode: leg.mode,
-            },
-            geometry: {
-              type: "Point",
-              coordinates: leg.coordinates[0],
-            },
-          }));
-
-        setRouteSegmentsData({
-          type: "FeatureCollection",
-          features: segmentFeatures,
-        });
-        setModeStartsData({
-          type: "FeatureCollection",
-          features: modeStartFeatures,
-        });
+        const selectedItinerary = transformedItineraries[0];
+        const alternativeItineraries = transformedItineraries.filter(
+          (itinerary) => itinerary.id !== selectedItinerary.id
+        );
+        applyItineraryToMap(selectedItinerary, alternativeItineraries);
+      } else {
+        onItinerariesChangeRef.current?.([]);
+        applyItineraryToMap(null, []);
       }
     } catch (error) {
       routeCalculatedRef.current = ""; // Reset on error so it can retry
-      setRouteSegmentsData(null);
-      setModeStartsData(null);
+      applyItineraryToMap(null, []);
       
-      // Notify parent component of error
-      if (onItineraryChange) {
-        onItineraryChange(null);
-      }
+      onItinerariesChangeRef.current?.([]);
     } finally {
       setLoading(false);
     }
-  }, [originMarker, destinationMarker, routingEngineInstance, onItineraryChange]);
+  }, [
+    originMarker,
+    destinationMarker,
+    routingEngineInstance,
+    applyItineraryToMap,
+  ]);
 
   const flyToLocation = useCallback((longitude: number, latitude: number) => {
     if (mapRef.current) {
@@ -273,6 +325,30 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
     []
   );
 
+  const fitMapToCoordinates = useCallback((coordinates: [number, number][]) => {
+    if (!mapRef.current || coordinates.length === 0) {
+      return;
+    }
+
+    const [firstLongitude, firstLatitude] = coordinates[0];
+    const bounds: [[number, number], [number, number]] = [
+      [firstLongitude, firstLatitude],
+      [firstLongitude, firstLatitude],
+    ];
+
+    coordinates.forEach(([longitude, latitude]) => {
+      bounds[0][0] = Math.min(bounds[0][0], longitude);
+      bounds[0][1] = Math.min(bounds[0][1], latitude);
+      bounds[1][0] = Math.max(bounds[1][0], longitude);
+      bounds[1][1] = Math.max(bounds[1][1], latitude);
+    });
+
+    mapRef.current.fitBounds(bounds, {
+      padding: 80,
+      duration: 1200,
+    });
+  }, []);
+
   // Effect 1: Set markers when origin/destination change
   useEffect(() => {
     if (origin?.coordinates) {
@@ -298,9 +374,37 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
 
   // Effect 2: Handle map positioning and route calculation when markers change
   useEffect(() => {
+    const selectedItinerary =
+      itineraries.find((itinerary) => itinerary.id === selectedItineraryId) ??
+      itineraries[0] ??
+      null;
+    const alternativeItineraries = selectedItinerary
+      ? itineraries.filter((itinerary) => itinerary.id !== selectedItinerary.id)
+      : [];
+    applyItineraryToMap(selectedItinerary, alternativeItineraries);
+
+    if (!selectedItinerary) {
+      previousItinerarySetRef.current = "";
+      previousSelectedItineraryIdRef.current = null;
+      return;
+    }
+
+    const itinerarySetKey = itineraries.map((itinerary) => itinerary.id).join("|");
+    const selectedCoordinates = getItineraryCoordinates(selectedItinerary);
+
+    if (itinerarySetKey !== previousItinerarySetRef.current) {
+      const allCoordinates = itineraries.flatMap((itinerary) => getItineraryCoordinates(itinerary));
+      fitMapToCoordinates(allCoordinates.length > 0 ? allCoordinates : selectedCoordinates);
+      previousItinerarySetRef.current = itinerarySetKey;
+    } else if (previousSelectedItineraryIdRef.current !== selectedItinerary.id) {
+      fitMapToCoordinates(selectedCoordinates);
+    }
+
+    previousSelectedItineraryIdRef.current = selectedItinerary.id;
+  }, [itineraries, selectedItineraryId, applyItineraryToMap, getItineraryCoordinates, fitMapToCoordinates]);
+
+  useEffect(() => {
     if (originMarker && destinationMarker) {
-      // Reset route calculation ref when markers change
-      routeCalculatedRef.current = "";
       fitMapToMarkers(
         originMarker.coordinates.longitude,
         originMarker.coordinates.latitude,
@@ -399,6 +503,29 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
               </Marker>
             ))}
           </>
+        )}
+
+        {alternativeRouteSegmentsData && alternativeRouteSegmentsData.features.length > 0 && (
+          <Source
+            id="route-alternatives-source"
+            type="geojson"
+            data={alternativeRouteSegmentsData}
+          >
+            <Layer
+              id="route-alternatives"
+              type="line"
+              layout={{
+                "line-join": "round",
+                "line-cap": "round",
+                visibility: "visible",
+              }}
+              paint={{
+                "line-color": ["get", "segmentColor"],
+                "line-width": 4,
+                "line-opacity": 0.24,
+              }}
+            />
+          </Source>
         )}
 
         {routeSegmentsData && routeSegmentsData.features.length > 0 && (

@@ -5,12 +5,36 @@
 import { decodePolyline } from './polylineDecoder';
 import { DisplayItinerary, DisplayLeg, WalkStep } from '../types/routeDisplay';
 
+const normalizeIdPart = (value: unknown): string =>
+  String(value ?? "na")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const createStableItineraryId = (otpItinerary: any, index = 0): string => {
+  const firstLeg = otpItinerary?.legs?.[0];
+  const lastLeg = otpItinerary?.legs?.[otpItinerary.legs.length - 1];
+  const seedParts = [
+    otpItinerary?.startTime,
+    otpItinerary?.endTime,
+    otpItinerary?.duration,
+    otpItinerary?.transfers,
+    firstLeg?.mode,
+    firstLeg?.route || firstLeg?.routeShortName,
+    lastLeg?.mode,
+    index,
+  ];
+  return `route-${normalizeIdPart(seedParts.join("-"))}`;
+};
+
 /**
  * Transform full OTP itinerary response into DisplayItinerary
  */
-export function transformOTPItinerary(otpItinerary: any): DisplayItinerary {
+export function transformOTPItinerary(otpItinerary: any, index = 0): DisplayItinerary {
+  const itineraryId = createStableItineraryId(otpItinerary, index);
   return {
-    id: `route-${Date.now()}-${Math.random()}`,
+    id: itineraryId,
     totalDuration: otpItinerary.duration || 0,
     totalDistance: otpItinerary.walkDistance || 0,
     walkDistance: otpItinerary.walkDistance || 0,
@@ -21,7 +45,7 @@ export function transformOTPItinerary(otpItinerary: any): DisplayItinerary {
     startTime: new Date(otpItinerary.startTime),
     endTime: new Date(otpItinerary.endTime),
     legs: Array.isArray(otpItinerary.legs) 
-      ? otpItinerary.legs.map((leg: any) => transformLeg(leg))
+      ? otpItinerary.legs.map((leg: any, legIndex: number) => transformLeg(leg, itineraryId, legIndex))
       : []
   };
 }
@@ -29,7 +53,7 @@ export function transformOTPItinerary(otpItinerary: any): DisplayItinerary {
 /**
  * Transform a single OTP leg into DisplayLeg
  */
-function transformLeg(otpLeg: any): DisplayLeg {
+function transformLeg(otpLeg: any, itineraryId: string, legIndex: number): DisplayLeg {
   // Decode geometry from polyline or fallback to from/to coordinates
   let coordinates: [number, number][] = [];
   
@@ -53,7 +77,7 @@ function transformLeg(otpLeg: any): DisplayLeg {
   }
   
   const leg: DisplayLeg = {
-    id: `leg-${Date.now()}-${Math.random()}`,
+    id: `${itineraryId}-leg-${legIndex}`,
     mode: otpLeg.mode,
     coordinates,
     distance: otpLeg.distance || 0,
@@ -148,7 +172,7 @@ export function transformOTPResponse(otpResponse: any): DisplayItinerary[] {
     return [];
   }
   
-  return otpResponse.plan.itineraries.map((itinerary: any) => 
-    transformOTPItinerary(itinerary)
+  return otpResponse.plan.itineraries.map((itinerary: any, index: number) => 
+    transformOTPItinerary(itinerary, index)
   );
 }
