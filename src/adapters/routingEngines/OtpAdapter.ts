@@ -175,12 +175,11 @@ export class OtpAdapter implements RoutingAdapter {
         : [],
     };
 
-    geometry.push(...decodePolyline(jsonLeg.legGeometry.points));
-
-    // // Preserve legGeometry from raw API response for polyline decoding
-    // if (jsonLeg.legGeometry) {
-    //   leg.legGeometry = jsonLeg.legGeometry;
-    // }
+    if (jsonLeg.legGeometry?.points) {
+      geometry.push(...decodePolyline(jsonLeg.legGeometry.points));
+      // Preserve leg geometry so downstream segment rendering can decode per-leg paths.
+      leg.legGeometry = jsonLeg.legGeometry;
+    }
 
     // Preserve distance from raw API response
     if (jsonLeg.distance !== undefined) {

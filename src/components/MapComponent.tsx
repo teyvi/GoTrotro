@@ -21,20 +21,82 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import "../styles/map.css";
 import {
   Location,
-  RouteData,
   RoutingAdapter,
   RoutingRequest,
   TransportationMode,
   LocationResult,
-  Itinerary,
 } from "../types/mapTypes";
-import { decodePolyline } from "../utils/polylineDecoder";
 import { transformOTPItinerary } from "../utils/otpTransformer";
 import { DisplayItinerary } from "../types/routeDisplay";
 
 interface MapComponentProps {
   onItineraryChange?: (itinerary: DisplayItinerary | null) => void;
 }
+
+type RouteSegmentFeature = {
+  type: "Feature";
+  properties: {
+    mode: string;
+    segmentColor: string;
+  };
+  geometry: {
+    type: "LineString";
+    coordinates: [number, number][];
+  };
+};
+
+type RouteSegmentsData = {
+  type: "FeatureCollection";
+  features: RouteSegmentFeature[];
+};
+
+type ModeStartFeature = {
+  type: "Feature";
+  properties: {
+    mode: string;
+  };
+  geometry: {
+    type: "Point";
+    coordinates: [number, number];
+  };
+};
+
+type ModeStartsData = {
+  type: "FeatureCollection";
+  features: ModeStartFeature[];
+};
+
+const DEFAULT_TRANSIT_COLOR = "#1779c2";
+const WALK_SEGMENT_COLOR = "#6b7280";
+
+const normalizeRouteColor = (routeColor?: string): string => {
+  if (!routeColor) return DEFAULT_TRANSIT_COLOR;
+  return routeColor.startsWith("#") ? routeColor : `#${routeColor}`;
+};
+
+const getSegmentColor = (mode: string, routeColor?: string): string => {
+  if (mode === "WALK") return WALK_SEGMENT_COLOR;
+  return normalizeRouteColor(routeColor);
+};
+
+const getModeStartLabel = (mode: string): string => {
+  switch (mode) {
+    case "BUS":
+      return "Bus Start";
+    case "TRAM":
+      return "Tram Start";
+    case "RAIL":
+      return "Rail Start";
+    case "SUBWAY":
+      return "Subway Start";
+    case "FERRY":
+      return "Ferry Start";
+    case "BICYCLE":
+      return "Bike Start";
+    default:
+      return "Transit Start";
+  }
+};
 
 function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
   const [searchParams] = useSearchParams();
@@ -43,7 +105,8 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
   const [destinationMarker, setDestinationMarker] = useState<Location | null>(
     null
   );
-  const [routeData, setRouteData] = useState<RouteData | null>(null);
+  const [routeSegmentsData, setRouteSegmentsData] = useState<RouteSegmentsData | null>(null);
+  const [modeStartsData, setModeStartsData] = useState<ModeStartsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [origin, setOrigin] = useState<LocationResult | null>(null);
   const [destination, setDestination] = useState<LocationResult | null>(null);
@@ -125,25 +188,50 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
           onItineraryChange(transformedRoute);
         }
 
-        // Extract and decode geometry from legs
-        const coordinates = itinerary.geometry;
+        const segmentFeatures: RouteSegmentFeature[] = transformedRoute.legs
+          .filter((leg) => leg.coordinates.length > 0)
+          .map((leg) => ({
+            type: "Feature",
+            properties: {
+              mode: leg.mode,
+              segmentColor: getSegmentColor(leg.mode, leg.routeInfo?.routeColor),
+            },
+            geometry: {
+              type: "LineString",
+              coordinates: leg.coordinates,
+            },
+          }));
 
-        if (coordinates.length === 0) {
-          throw new Error("No geometry data found in route");
+        if (segmentFeatures.length === 0) {
+          throw new Error("No leg geometry found in route");
         }
 
-        setRouteData({
-          type: "Feature",
-          properties: {},
-          geometry: {
-            type: "LineString",
-            coordinates: coordinates,
-          },
+        const modeStartFeatures: ModeStartFeature[] = transformedRoute.legs
+          .filter((leg) => leg.mode !== "WALK" && leg.coordinates.length > 0)
+          .map((leg) => ({
+            type: "Feature",
+            properties: {
+              mode: leg.mode,
+            },
+            geometry: {
+              type: "Point",
+              coordinates: leg.coordinates[0],
+            },
+          }));
+
+        setRouteSegmentsData({
+          type: "FeatureCollection",
+          features: segmentFeatures,
+        });
+        setModeStartsData({
+          type: "FeatureCollection",
+          features: modeStartFeatures,
         });
       }
     } catch (error) {
       routeCalculatedRef.current = ""; // Reset on error so it can retry
-      setRouteData(null);
+      setRouteSegmentsData(null);
+      setModeStartsData(null);
       
       // Notify parent component of error
       if (onItineraryChange) {
@@ -184,7 +272,6 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
     },
     []
   );
-
 
   // Effect 1: Set markers when origin/destination change
   useEffect(() => {
@@ -264,8 +351,14 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
             longitude={originMarker.coordinates.longitude}
             latitude={originMarker.coordinates.latitude}
             anchor="bottom"
-            color="#0000FF"
-          />
+          >
+            <div className="map-marker map-marker-start" aria-label={`Start: ${originMarker.name}`}>
+              <span className="map-marker-label">Start</span>
+              <span className="map-marker-pin">
+                <span className="map-marker-pin-dot" />
+              </span>
+            </div>
+          </Marker>
         )}
 
         {destinationMarker && (
@@ -273,40 +366,48 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
             longitude={destinationMarker.coordinates.longitude}
             latitude={destinationMarker.coordinates.latitude}
             anchor="bottom"
-            color="#FF0000"
-          />
+          >
+            <div className="map-marker map-marker-end" aria-label={`End: ${destinationMarker.name}`}>
+              <span className="map-marker-label">End</span>
+              <span className="map-marker-pin">
+                <span className="map-marker-pin-dot" />
+              </span>
+            </div>
+          </Marker>
         )}
 
-        {routeData && routeData.geometry.coordinates.length > 0 && (
+        {modeStartsData && modeStartsData.features.length > 0 && (
           <>
-            {/* Main route line */}
-            {/* Main route line */}
+            {modeStartsData.features.map((feature, index) => (
+              <Marker
+                key={`mode-start-${feature.properties.mode}-${feature.geometry.coordinates[0]}-${feature.geometry.coordinates[1]}-${index}`}
+                longitude={feature.geometry.coordinates[0]}
+                latitude={feature.geometry.coordinates[1]}
+                anchor="bottom"
+              >
+                <div
+                  className="map-marker map-marker-mode"
+                  aria-label={`${getModeStartLabel(feature.properties.mode)}`}
+                >
+                  <span className="map-marker-label">
+                    {getModeStartLabel(feature.properties.mode)}
+                  </span>
+                  <span className="map-marker-pin">
+                    <span className="map-marker-pin-dot" />
+                  </span>
+                </div>
+              </Marker>
+            ))}
+          </>
+        )}
+
+        {routeSegmentsData && routeSegmentsData.features.length > 0 && (
+          <>
             <Source 
-              id="route-source" 
+              id="route-segments-source" 
               type="geojson" 
-              data={routeData}
-
-
+              data={routeSegmentsData}
             >
-              <Layer 
-                id="route"
-                type="line"
-                layout={{
-                  "line-join": "round",
-                  "line-cap": "round",
-                  visibility: "visible"
-                }}
-                paint={{
-                  "line-color": "#FF0000",
-                  "line-width": 6,
-                  "line-opacity": 0.8,
-                }}
-              />
-              {/* Route outline for better visibility */}
-              {/* Route outline for better visibility */}
-              {/* Route outline for better visibility */}
-              {/* Route outline for better visibility */}
-              {/* Route outline for better visibility */}
               {/* Route outline for better visibility */}
               <Layer 
                 id="route-outline"
@@ -321,9 +422,24 @@ function MapComponent({ onItineraryChange }: MapComponentProps = {}) {
                   "line-width": 8,
                   "line-opacity": 0.22,
                 }}
-                beforeId="route"
+              />
+
+              <Layer 
+                id="route"
+                type="line"
+                layout={{
+                  "line-join": "round",
+                  "line-cap": "round",
+                  visibility: "visible"
+                }}
+                paint={{
+                  "line-color": ["get", "segmentColor"],
+                  "line-width": 6,
+                  "line-opacity": 0.88,
+                }}
               />
             </Source>
+
           </>
         )}
       </Map>
