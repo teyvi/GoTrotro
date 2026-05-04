@@ -85,16 +85,8 @@ const getModeStartLabel = (mode: string): string => {
   switch (mode) {
     case "BUS":
       return "Bus Start";
-    case "TRAM":
-      return "Tram Start";
-    case "RAIL":
-      return "Rail Start";
-    case "SUBWAY":
-      return "Subway Start";
-    case "FERRY":
-      return "Ferry Start";
-    case "BICYCLE":
-      return "Bike Start";
+    case "WALK":
+      return "Walk Start";
     default:
       return "Transit Start";
   }
